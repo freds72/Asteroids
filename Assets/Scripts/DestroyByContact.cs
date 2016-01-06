@@ -11,8 +11,10 @@ public class DestroyByContact : MonoBehaviour
         if (col.collider.tag.Equals(IgnoreTag))
             return;
 
+        Debug.Log(string.Format("Collider: {0}", col.collider.tag));
         DestroyObject(this.gameObject);
         if ( DestroyedPrefab != null)
             Instantiate(DestroyedPrefab, transform.position, transform.rotation);
     }
+
 }

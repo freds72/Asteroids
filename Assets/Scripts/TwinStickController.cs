@@ -4,6 +4,7 @@ using System.Collections;
 public class TwinStickController : MonoBehaviour {
 
     public float Sensitivity = 3.0f;
+    public GameObject RotationTarget;
 
 	// Use this for initialization
 	void Start () {
@@ -31,14 +32,9 @@ public class TwinStickController : MonoBehaviour {
             // get the angle of the difference in radians, then convert to degrees using Rad2Deg
             float zrot = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
 
-            // Debug.Log(string.Format("rotation: {0:0.00}", zrot));
-
-
             // set the z axis rotation of this transform in degrees using Euler
-            transform.rotation = Quaternion.Euler(0.0f, 0.0f, zrot - 90);
-
-            // transform.LookAt(transform.position + direction, Vector3.up);
-            // transform.rotation = Quaternion.LookRotation(direction);
+            Transform t = RotationTarget == null ? this.transform : RotationTarget.transform;
+            t.rotation = Quaternion.Euler(0.0f, 0.0f, zrot - 90);
         }
     }
 }

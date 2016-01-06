@@ -10,6 +10,7 @@ class Weapon : MonoBehaviour
     public float Delay = 0.5f;
     float _nextFire = 0;
     public string InputName = "Fire";
+    public string ReloadInputName = "Reload";
     public bool IsSecondary = false;
 
     public void Fire()
@@ -21,7 +22,7 @@ class Weapon : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetAxis(InputName) == (IsSecondary?-1:1) && Time.time > _nextFire)
+        if (Input.GetAxis(InputName) == (IsSecondary ? -1 : 1) && Time.time > _nextFire)
             Fire();
     }
 }
