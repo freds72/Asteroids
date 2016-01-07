@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
 public class StatusPanel : MonoBehaviour {
@@ -14,12 +14,9 @@ public class StatusPanel : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 	    if ( Input.GetButtonDown("Status") )
-        {
             _animator.SetBool(_openParam, true);
-        }
+
         if (Input.GetButtonUp("Status"))
-        {
             _animator.SetBool(_openParam, false);
-        }
 	}
 }
