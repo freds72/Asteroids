@@ -1,12 +1,14 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
+[RequireComponent(typeof(Focusable))]
 class InventoryListView : MonoBehaviour
 {
     public GameObject WidgetPrefab;
     public GameObject Player;
-    List<GameObject> _widgets = new List<GameObject>();
+    List<Focusable> _widgets = new List<Focusable>();
     int _focusIndex = 0;
 
     void Start()
@@ -18,25 +20,32 @@ class InventoryListView : MonoBehaviour
             GameObject igo = Instantiate(WidgetPrefab);
             InventoryItemView iiv = igo.GetComponent<InventoryItemView>();
             iiv.Item = it;
-			iiv.OnActivate += (e) => {
-				inventory.Activate(e);
-			};
-            // add to self
-            igo.transform.SetParent(this.transform);
+            // 
+            Focusable focus = igo.GetComponent<Focusable>();
             // disabled by default
-            igo.SetActive(false);
-            _widgets.Add(igo);
+            focus.SetFocus(false);
+            // add to self
+            igo.transform.SetParent(this.transform, false);
+            _widgets.Add(focus);
 		}
 	}
 
     void OnEnable()
     {
+        Debug.Log("Got focus");
         int i = 0;
-        foreach(GameObject it in _widgets)
+        foreach (Focusable it in _widgets)
         {
-            it.SetActive(_focusIndex == i);
+            it.SetFocus(_focusIndex == i);
             i++;
-        }
+        }        
+    }
+
+    void OnDisable()
+    {
+        foreach (Focusable it in _widgets)
+            it.SetFocus(false);
+        Debug.Log("Lost focus");
     }
 
     void ChangeFocus(int index)
@@ -46,9 +55,9 @@ class InventoryListView : MonoBehaviour
             return;
 
         if (_focusIndex < _widgets.Count)
-            _widgets[_focusIndex].SetActive(false);
+            _widgets[_focusIndex].SetFocus(false);
 
-        _widgets[index].SetActive(true);
+        _widgets[index].SetFocus(true);
         _focusIndex = index;
     }
 
