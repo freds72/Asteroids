@@ -1,21 +1,25 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
-public class RadarItem : MonoBehaviour {
-    public GameObject LockedSprite;
-    public GameObject SelectedSprite;
-    public Transform Target;
+public class RadarItem
+{
+    public RadarSignature Target { get; private set; }
     public float LastFiredAtTime { get; set; }
     public float LastSeenTime { get; set; }
     public bool IsLocked { get; set; }
-    
-	// Use this for initialization
-	void Start () {
-	
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
+    public bool IsSelected { get; set; }
+
+    public RadarItem(RadarSignature target)
+    {
+        LastSeenTime = Time.time;
+        target.Spotted++;
+        Target = target;
+    }
+
+    public void Release()
+    {
+        // Unity does some magic with managed wrappers when object is destroyed
+        if (Target != null)
+            Target.Spotted--;
+    }
 }

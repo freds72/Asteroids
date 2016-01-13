@@ -23,6 +23,6 @@ public class PlaneController : MonoBehaviour {
         Transform t = RotationTarget == null ? this.transform : RotationTarget.transform;
         t.rotation *= Quaternion.Euler(0.0f, 0.0f, -lh * RotationSpeed * Time.deltaTime);
 
-        t.position += Time.deltaTime * Velocity * t.up;
+        this.transform.position += Time.deltaTime * Velocity * t.up;
     }
 }
