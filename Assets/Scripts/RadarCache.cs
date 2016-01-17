@@ -5,23 +5,24 @@ using System.Collections.Generic;
 class RadarCache : IEnumerable<RadarItem>
 {
     public RadarMode Mode { get; private set; }
-    public Radar Radar { get; private set; }
+    public Transform Host { get; private set; }
     float _refreshTime = 0;
     float _angle;
     float _maxSqrd;
     float _minSqrd;
     Dictionary<int, RadarItem> _blips = new Dictionary<int, RadarItem>(8);
+    SortedList<float, RadarItem> _blipsByDistance = new SortedList<float, RadarItem>();
+    // keep both selected index and selected instance ID for consistency
+    int _selectedIndex = 0;
 
-    public RadarCache(Radar radar, RadarMode mode)
+    public RadarCache(Transform host, RadarMode mode)
     {
-        Radar = radar;
+        Host = host;
         Mode = mode;
         _refreshTime = Time.time;
         _maxSqrd = mode.MaxRange * mode.MaxRange;
         _minSqrd = mode.MinRange * mode.MinRange;
         _angle = Mathf.Sin(mode.Angle);
-        if (_angle < 0)
-            throw new ArgumentOutOfRangeException("Radar angle is invalid: " + mode.Angle);
     }
 
     public void Pause()
@@ -45,15 +46,25 @@ class RadarCache : IEnumerable<RadarItem>
     List<int> _lostIds = new List<int>(8);
     void Scan()
     {
+        // get current selection
+        RadarItem currentSelection = SelectedItem;
+        int selectedID = -1;
+        if ( currentSelection != null )
+            selectedID = currentSelection.InstanceID;
+
+        // clear previous sort
+        _blipsByDistance.Clear();
+        _blipsByDistance.Clear();
+        _selectedIndex = 0;
         // Find all gameobjects in range
-        IEnumerator<GameObject> it = FindBlips();
+        IEnumerator<KeyValuePair<float, GameObject>> it = FindBlips();
         while (it.MoveNext())
         {
-            RadarSignature rs = it.Current.GetComponent<RadarSignature>();
+            RadarSignature rs = it.Current.Value.GetComponent<RadarSignature>();
             if (rs != null)
             {
                 // is it a known target?
-                int id = it.Current.GetInstanceID();
+                int id = it.Current.Value.GetInstanceID();
                 RadarItem blip = null;
                 if (!_blips.TryGetValue(id, out blip))
                 {
@@ -64,6 +75,18 @@ class RadarCache : IEnumerable<RadarItem>
                 {
                     blip.LastSeenTime = Time.time;
                 }
+                // sort all blips by distance
+                // Debug.Log(string.Format("{0}: {1} kms", blip.Target.name, Mathf.Sqrt(it.Current.Key)));
+                _blipsByDistance.Add(it.Current.Key, blip);
+            }
+        }
+        // refresh selected position
+        for (int i = 0; i < _blipsByDistance.Count; i++)
+        {
+            if (_blipsByDistance.Values[i].InstanceID == selectedID)
+            {
+                _selectedIndex = i;
+                break;
             }
         }
         // cleanup 'lost' blips
@@ -81,10 +104,10 @@ class RadarCache : IEnumerable<RadarItem>
             _blips.Remove(id);
     }
 
-    IEnumerator<GameObject> FindBlips()
+    IEnumerator<KeyValuePair<float, GameObject>> FindBlips()
     {
         GameObject[] gos = GameObject.FindGameObjectsWithTag(Mode.Tag);
-        Vector3 position = Radar.transform.position;
+        Vector3 position = Host.transform.position;
         foreach (GameObject go in gos)
         {
             Vector3 diff = go.transform.position - position;
@@ -94,9 +117,9 @@ class RadarCache : IEnumerable<RadarItem>
             {
                 // check against radar cone
                 diff.Normalize();
-                if (Vector3.Dot(Radar.transform.up, diff) >= _angle)
+                if (Vector3.Dot(Host.transform.up, diff) >= _angle)
                 {
-                    yield return go;
+                    yield return new KeyValuePair<float,GameObject>(curDistance, go);
                 }
             }
         }
@@ -110,5 +133,36 @@ class RadarCache : IEnumerable<RadarItem>
     System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
     {
        return _blips.Values.GetEnumerator();
+    }
+
+    public RadarItem SelectedItem
+    {
+        get
+        {
+            if (_selectedIndex < _blipsByDistance.Count && _selectedIndex >= 0)
+                return _blipsByDistance.Values[_selectedIndex];
+            return null;
+        }
+    }
+
+    public void Next()
+    {
+        _selectedIndex++;
+        if (_selectedIndex >= _blipsByDistance.Count)
+            _selectedIndex = 0;
+    }
+
+    public void Previous()
+    {
+        _selectedIndex--;
+        if (_selectedIndex < 0)
+            _selectedIndex = Mathf.Max(0,_blipsByDistance.Count - 1);
+    }
+
+    public void ToggleLock()
+    {
+        RadarItem ri = SelectedItem;
+        if (ri != null)
+            ri.IsLocked = !ri.IsLocked;
     }
 }

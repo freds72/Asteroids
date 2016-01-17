@@ -1,15 +1,23 @@
 fileFormatVersion: 2
-guid: 7a1e82805429a0c40b34ae74347c9bd2
-timeCreated: 1451827878
+guid: 705b80e0de5e9e24a808df1d1e8ff76b
+timeCreated: 1452939416
 licenseType: Free
 ModelImporter:
   serializedVersion: 19
   fileIDToRecycleName:
-    100000: //RootNode
-    400000: //RootNode
-    2300000: //RootNode
-    3300000: //RootNode
-    4300000: Cube
+    100000: DropAnchor
+    100002: Empty
+    100004: GunAnchor
+    100006: Ship
+    100008: //RootNode
+    400000: DropAnchor
+    400002: Empty
+    400004: GunAnchor
+    400006: Ship
+    400008: //RootNode
+    2300000: Ship
+    3300000: Ship
+    4300000: Ship
     7400000: Default Take
     9500000: //RootNode
   materials:
@@ -41,7 +49,7 @@ ModelImporter:
     addColliders: 0
     importBlendShapes: 1
     swapUVChannels: 0
-    generateSecondaryUV: 1
+    generateSecondaryUV: 0
     useFileUnits: 1
     optimizeMeshForGPU: 1
     keepQuads: 0
@@ -52,8 +60,8 @@ ModelImporter:
     secondaryUVPackMargin: 4
     useFileScale: 1
   tangentSpace:
-    normalSmoothAngle: 0
-    normalImportMode: 1
+    normalSmoothAngle: 60
+    normalImportMode: 0
     tangentImportMode: 3
   importAnimation: 1
   copyAvatar: 0

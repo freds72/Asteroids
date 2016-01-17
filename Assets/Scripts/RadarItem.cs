@@ -5,10 +5,9 @@ public class RadarItem
 {
     public RadarSignature Target { get; private set; }
     public float LastFiredAtTime { get; set; }
-    public float LastSeenTime { get; set; }
+    public float LastSeenTime { get; set; }    
     public bool IsLocked { get; set; }
     public bool IsSelected { get; set; }
-
     public RadarItem(RadarSignature target)
     {
         LastSeenTime = Time.time;
@@ -22,4 +21,7 @@ public class RadarItem
         if (Target != null)
             Target.Spotted--;
     }
+
+    public int InstanceID
+    { get { return Target == null ? -1 : Target.GetInstanceID(); } }
 }

@@ -28,7 +28,7 @@ public class RadarSignature : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-        
+        Refresh();
 	}
 	
     void Refresh()
@@ -37,16 +37,14 @@ public class RadarSignature : MonoBehaviour {
         if (_count == 0 && VisibleAvatar.activeInHierarchy == true)
         {
             VisibleAvatar.SetActive(false);
-#if DEBUG
-            HiddenAvatar.SetActive(true);
-#endif
+            if ( HiddenAvatar != null )
+                HiddenAvatar.SetActive(true);
         }
         else if (_count > 0 && VisibleAvatar.activeInHierarchy == false)
         {
             VisibleAvatar.SetActive(true);
-#if DEBUG
-            HiddenAvatar.SetActive(false);
-#endif
+            if (HiddenAvatar != null)
+                HiddenAvatar.SetActive(false);
         }
     }
 
