@@ -3,17 +3,21 @@ using System.Collections;
 using System.Collections.Generic;
 using Vectrosity;
 
+[RequireComponent(typeof(TargetLink))]
 public class TargetLine : MonoBehaviour {
     public float LineWidth = 1;
     public Texture LineTexture = null;
     public float LineTextureScale = 1;
-    public Transform Target;
-
+    
+    Transform _target;
     VectorLine _targetline;
 
 	// Use this for initialization
 	void Start () {
-        if (Target != null)
+        TargetLink link = GetComponent<TargetLink>();
+        _target = link.Target;
+
+        if (_target != null)
         {
             List<Vector3> points = new List<Vector3>(new Vector3[] {
                 transform.position,
@@ -24,19 +28,17 @@ public class TargetLine : MonoBehaviour {
             else
                 _targetline = new VectorLine(GetType().Name, points, LineTexture, LineWidth, LineType.Discrete, Joins.None);
             _targetline.textureScale = LineTextureScale;
-
-            // VectorManager.ObjectSetup(gameObject, _targetline, Visibility.Dynamic, Brightness.None);
         }
 	}
 	
 	// Update is called once per frame
 	void Update () {
 
-        // do we still have a 
-        if (Target != null)
+        // do we still have a target?
+        if (_target != null)
         {
             _targetline.points3[0] = transform.position;
-            _targetline.points3[1] = Target.position;
+            _targetline.points3[1] = _target.position;
             _targetline.Draw3D();
         }
         else if (_targetline != null)  // in case target gets destroyed
@@ -45,4 +47,9 @@ public class TargetLine : MonoBehaviour {
             _targetline = null;
         }
 	}
+
+    void OnDestroy()
+    {
+        VectorLine.Destroy(ref _targetline);
+    }
 }

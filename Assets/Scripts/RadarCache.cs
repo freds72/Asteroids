@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 
 class RadarCache : IEnumerable<RadarItem>
 {
@@ -22,7 +23,7 @@ class RadarCache : IEnumerable<RadarItem>
         _refreshTime = Time.time;
         _maxSqrd = mode.MaxRange * mode.MaxRange;
         _minSqrd = mode.MinRange * mode.MinRange;
-        _angle = Mathf.Sin(mode.Angle);
+        _angle = Mathf.Sin(Mathf.Deg2Rad * mode.Angle);
     }
 
     public void Pause()
@@ -133,6 +134,20 @@ class RadarCache : IEnumerable<RadarItem>
     System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
     {
        return _blips.Values.GetEnumerator();
+    }
+
+    /// <summary>
+    /// Return any locked item and unlock it
+    /// </summary>
+    public RadarItem AcquireLock
+    {
+        get
+        {
+            RadarItem item = _blipsByDistance.FirstOrDefault(it => it.Value.IsLocked).Value;
+            if (item != null)
+                item.IsLocked = false;
+            return item;
+        }
     }
 
     public RadarItem SelectedItem

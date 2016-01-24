@@ -2,11 +2,21 @@
 using System.Collections;
 using System.Collections.Generic;
 using Vectrosity;
+using UnityEngine.UI;
 
 public class RadarSelection : MonoBehaviour {
     public float LineWidth = 1;
     public Texture LineTexture = null;
     public float Size = 1;
+
+    public Text InformationPanel;
+    public float InformationDelay = 0.5f;
+
+    public string TargetInfo
+    {
+        get;
+        set;
+    }
 
 	// Use this for initialization
 	void Start () {
@@ -38,6 +48,22 @@ public class RadarSelection : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-	
 	}
+
+    void OnEnable()
+    {
+        StartCoroutine(UpdateInformationPanel());
+    }
+
+    IEnumerator UpdateInformationPanel()
+    {
+        if (InformationPanel != null)
+        {
+            while (true)
+            {
+                InformationPanel.text = TargetInfo;
+                yield return new WaitForSeconds(InformationDelay);
+            }
+        }
+    }
 }

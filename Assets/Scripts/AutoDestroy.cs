@@ -1,7 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class AutoDestroy : MonoBehaviour {
+public class AutoDestroy : 
+    MonoBehaviour,
+    IDestroyable
+{
 
     public float Duration = 1.0f;
     // Gameobject to spawn when this one dies
@@ -22,10 +25,11 @@ public class AutoDestroy : MonoBehaviour {
         Invoke("DoDestroy", Duration);
     }
 
-    void DoDestroy()
+    public void DoDestroy()
     {
-        Destroy(gameObject);
         if (Prefab != null)
             Instantiate(Prefab, transform.position, transform.rotation);
+
+        Destroy(gameObject);
     }
 }

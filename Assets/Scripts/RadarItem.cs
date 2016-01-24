@@ -7,7 +7,6 @@ public class RadarItem
     public float LastFiredAtTime { get; set; }
     public float LastSeenTime { get; set; }    
     public bool IsLocked { get; set; }
-    public bool IsSelected { get; set; }
     public RadarItem(RadarSignature target)
     {
         LastSeenTime = Time.time;

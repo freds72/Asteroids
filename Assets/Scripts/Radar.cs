@@ -5,7 +5,7 @@ using System.Linq;
 using Vectrosity;
 
 // A radar attached to a GameObject
-public class Radar : MonoBehaviour,IEnumerable<RadarItem>
+public class Radar : MonoBehaviour
 {
     public List<RadarMode> Modes = new List<RadarMode>();
     public RadarMode EyeMode = new RadarMode() { Label = "Eye", Angle = 120, MaxRange = 5, MinRange = 0, Memory = 5.0f, ScanPeriod = 1.0f };
@@ -16,14 +16,17 @@ public class Radar : MonoBehaviour,IEnumerable<RadarItem>
     public Texture LineTexture = null;
     public float TextureScale = 1.0f;
 
+    public float SelectionSpeed = 0.35f;
+
     List<RadarCache> _cache = new List<RadarCache>();
     List<VectorLine> _cones = new List<VectorLine>();
 
-    Transform _selection;
-    List<Transform> _locks = new List<Transform>(4);
+    RadarSelection _selection;
+    List<Transform> _locksInstanceCache = new List<Transform>(4);
     RadarCache _eyeCache;
     public int DefaultMode = 0;
     int _selectedMode = 0;
+    int _lastSelectedItem = -1;
     // Use this for initialization
     void Start()
     {
@@ -58,7 +61,7 @@ public class Radar : MonoBehaviour,IEnumerable<RadarItem>
         // change to default selection
         ChangeMode(DefaultMode);
 
-        _selection = Instantiate(SelectionPrefab).GetComponent<Transform>();
+        _selection = Instantiate(SelectionPrefab).GetComponent<RadarSelection>();
         _selection.gameObject.SetActive(false);
     }
 
@@ -70,6 +73,7 @@ public class Radar : MonoBehaviour,IEnumerable<RadarItem>
             _cache[_selectedMode].Pause();
             _cones[_selectedMode].active = false;
         }
+        _lastSelectedItem = -1;
         _selectedMode = mode;
         _cones[_selectedMode].active = true;
     }
@@ -110,7 +114,12 @@ public class Radar : MonoBehaviour,IEnumerable<RadarItem>
         RadarItem selectedItem = activeRadar.SelectedItem;
         if ( selectedItem != null )
         {
-            _selection.position = selectedItem.Target.transform.position;
+            if (_lastSelectedItem != selectedItem.InstanceID)
+            {
+                // move toward target
+                _lastSelectedItem = selectedItem.InstanceID;
+                StartCoroutine(MoveSelector(selectedItem.InstanceID,_selection.transform.position, selectedItem.Target.transform));
+            }
             if ( !_selection.gameObject.activeInHierarchy )
                 _selection.gameObject.SetActive(true);
         }
@@ -128,14 +137,14 @@ public class Radar : MonoBehaviour,IEnumerable<RadarItem>
             {
                 // pick lock target from cache
                 Transform lck = null;
-                if ( i >= _locks.Count )
+                if ( i >= _locksInstanceCache.Count )
                 {
                     // create a new instance
                     Transform newLock = Instantiate(LockPrefab).GetComponent<Transform>();
                     newLock.gameObject.SetActive(false);
-                    _locks.Add(newLock);
+                    _locksInstanceCache.Add(newLock);
                 }                    
-                lck = _locks[i];                
+                lck = _locksInstanceCache[i];                
                 lck.position = it.Target.transform.position;
                 if (!lck.gameObject.activeInHierarchy)
                     lck.gameObject.SetActive(true);
@@ -143,25 +152,40 @@ public class Radar : MonoBehaviour,IEnumerable<RadarItem>
             }
         }
         // disable remaining locks
-        for(;i<_locks.Count;i++)
+        for(;i<_locksInstanceCache.Count;i++)
         {
-            Transform lck = _locks[i];
+            Transform lck = _locksInstanceCache[i];
             if (lck.gameObject.activeInHierarchy)
                 lck.gameObject.SetActive(false);
         }
     }
 
-    public IEnumerator<RadarItem> GetEnumerator()
+    IEnumerator MoveSelector(int id,Vector3 sourcePosition, Transform target)
     {
-        if (_cache.Count == 0)
-           return Enumerable.Empty<RadarItem>().GetEnumerator();
-        return _cache[_selectedMode].GetEnumerator();
+        float elapsedTime = 0;
+        Vector3 targetPosition = target.position;
+        _selection.TargetInfo = "";
+        while (elapsedTime < SelectionSpeed && _lastSelectedItem == id)
+        {
+            _selection.transform.position = Vector3.Lerp(sourcePosition, targetPosition, Mathf.SmoothStep(0, 1, (elapsedTime / SelectionSpeed)));
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }        
+        // real-time tracking (unless we change target)
+        while (_lastSelectedItem == id)
+        {
+            _selection.transform.position = target.position;
+            _selection.TargetInfo = string.Format("{0:0.00}", Vector3.Distance(transform.position, target.position));
+            yield return null;
+        }
     }
 
-    IEnumerator IEnumerable.GetEnumerator()
+    public Transform AcquireLock
     {
-        if (_cache.Count == 0)
-            return Enumerable.Empty<RadarItem>().GetEnumerator();
-        return _cache[_selectedMode].GetEnumerator();
+        get
+        {
+            RadarItem lockedIem = _cache[_selectedMode].AcquireLock;
+            return lockedIem == null ? null : lockedIem.Target.transform;
+        }
     }
 }

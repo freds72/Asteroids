@@ -6,6 +6,7 @@ public class Stationaries : MonoBehaviour {
     public List<Stationary> Items = new List<Stationary>(4);
     public Radar Radar;
     int _selected = 0;
+
 	// Use this for initialization
 	void Start () {
         if (Radar == null)
@@ -27,9 +28,17 @@ public class Stationaries : MonoBehaviour {
 	    if ( Input.GetButtonUp("Fire"))
         {
             Stationary item = SelectedItem;
-            if ( item != null )
+            if ( item != null && 
+                 item.CanSpawn())
             {
-                GameObject go = (GameObject)Instantiate(item.Prefab, transform.position, transform.rotation);                
+                GameObject go = item.Spawn(transform);
+                Transform tgt = Radar.AcquireLock;
+                if ( tgt != null )
+                {
+                    // get the target interface
+                    TargetLink link = go.GetComponent<TargetLink>();
+                    link.Target = tgt;
+                }
             }
         }
 	}

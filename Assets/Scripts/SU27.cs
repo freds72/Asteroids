@@ -21,6 +21,5 @@ public class SU27 : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-	
 	}
 }
