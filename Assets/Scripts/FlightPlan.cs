@@ -15,6 +15,10 @@ public class FlightPlan : MonoBehaviour {
         List<Vector3> points = new List<Vector3>();
         foreach(Waypoint it in GetComponentsInChildren<Waypoint>())
         {
+            // record initial position
+            if (i == 0)
+                InitialPosition = it.transform.position;
+
             it.ID = i++;
             points.Add(it.transform.position);
         }
@@ -29,7 +33,13 @@ public class FlightPlan : MonoBehaviour {
 
         VectorManager.ObjectSetup(gameObject, line, Visibility.Dynamic, Brightness.None);
 	}
-	
+
+    public Vector3 InitialPosition
+    {
+        get;
+        private set;
+    }
+
 	// Update is called once per frame
 	void Update () {
 	

@@ -118,7 +118,7 @@ public class Radar : MonoBehaviour
             {
                 // move toward target
                 _lastSelectedItem = selectedItem.InstanceID;
-                StartCoroutine(MoveSelector(selectedItem.InstanceID,_selection.transform.position, selectedItem.Target.transform));
+                StartCoroutine(MoveSelector(selectedItem.InstanceID,_selection.transform.position, selectedItem));
             }
             if ( !_selection.gameObject.activeInHierarchy )
                 _selection.gameObject.SetActive(true);
@@ -160,9 +160,10 @@ public class Radar : MonoBehaviour
         }
     }
 
-    IEnumerator MoveSelector(int id,Vector3 sourcePosition, Transform target)
+    IEnumerator MoveSelector(int id,Vector3 sourcePosition, RadarItem radarItem)
     {
         float elapsedTime = 0;
+        Transform target = radarItem.Target.transform;
         Vector3 targetPosition = target.position;
         _selection.TargetInfo = "";
         while (elapsedTime < SelectionSpeed && _lastSelectedItem == id)
@@ -171,11 +172,20 @@ public class Radar : MonoBehaviour
             elapsedTime += Time.deltaTime;
             yield return null;
         }        
-        // real-time tracking (unless we change target)
+        // real-time tracking (unless we change target)        
         while (_lastSelectedItem == id)
         {
             _selection.transform.position = target.position;
-            _selection.TargetInfo = string.Format("{0:0.00}", Vector3.Distance(transform.position, target.position));
+            int angle = (int)Vector2.Angle(new Vector2(target.up.x, target.up.y), new Vector2(transform.up.x, transform.up.y));
+            angle %= 360;
+            if ( angle < 0 )
+                angle += 360;
+            
+            _selection.TargetInfo = string.Format("{0}\u00B0\n{1:0.00}\n0.9",
+                angle,
+                radarItem.Distance,
+                0.9f); // TODO: get target velocity
+            
             yield return null;
         }
     }

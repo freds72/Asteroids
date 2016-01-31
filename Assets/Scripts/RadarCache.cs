@@ -78,6 +78,7 @@ class RadarCache : IEnumerable<RadarItem>
                 }
                 // sort all blips by distance
                 // Debug.Log(string.Format("{0}: {1} kms", blip.Target.name, Mathf.Sqrt(it.Current.Key)));
+                blip.Distance = it.Current.Key;
                 _blipsByDistance.Add(it.Current.Key, blip);
             }
         }
@@ -120,7 +121,7 @@ class RadarCache : IEnumerable<RadarItem>
                 diff.Normalize();
                 if (Vector3.Dot(Host.transform.up, diff) >= _angle)
                 {
-                    yield return new KeyValuePair<float,GameObject>(curDistance, go);
+                    yield return new KeyValuePair<float,GameObject>(Mathf.Sqrt(curDistance), go);
                 }
             }
         }
@@ -128,12 +129,16 @@ class RadarCache : IEnumerable<RadarItem>
 
     public IEnumerator<RadarItem> GetEnumerator()
     {
+        if ( _blips.Count == 0)
+            return Enumerable.Empty<RadarItem>().GetEnumerator();
         return _blips.Values.GetEnumerator();
     }
 
     System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
     {
-       return _blips.Values.GetEnumerator();
+        if (_blips.Count == 0)
+            return Enumerable.Empty<RadarItem>().GetEnumerator();
+        return _blips.Values.GetEnumerator();
     }
 
     /// <summary>

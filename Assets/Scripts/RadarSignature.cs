@@ -34,13 +34,13 @@ public class RadarSignature : MonoBehaviour {
     void Refresh()
     {
         // switch visibility as needed
-        if (_count == 0 && VisibleAvatar.activeInHierarchy == true)
+        if (_count == 0 && VisibleAvatar != null && VisibleAvatar.activeInHierarchy == true)
         {
             VisibleAvatar.SetActive(false);
             if ( HiddenAvatar != null )
                 HiddenAvatar.SetActive(true);
         }
-        else if (_count > 0 && VisibleAvatar.activeInHierarchy == false)
+        else if (_count > 0 && VisibleAvatar != null && VisibleAvatar.activeInHierarchy == false)
         {
             VisibleAvatar.SetActive(true);
             if (HiddenAvatar != null)

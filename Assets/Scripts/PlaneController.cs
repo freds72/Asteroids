@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 /// <summary>
 /// Simple top-down "plane" controller
@@ -11,6 +12,9 @@ public class PlaneController : MonoBehaviour {
     public float Velocity = 1.0f;
 
     AudioSource _audio;
+    float _releaseMemory = 2.0f;
+    Dictionary<Stationary.StationaryType, float> _memoryByStation = new Dictionary<Stationary.StationaryType, float>();
+    Dictionary<Stationary.StationaryType, int> _releaseCountByStation = new Dictionary<Stationary.StationaryType, int>();
 
 	// Use this for initialization
 	void Start () {
@@ -36,16 +40,29 @@ public class PlaneController : MonoBehaviour {
     }
 
     void StationRelease(Stationary s)
-    { 
-        switch(s.Type)
+    {
+        float memoryTime = 0;
+        _memoryByStation.TryGetValue(s.Type, out memoryTime);
+        int releaseCount = 0;
+        if ( memoryTime > Time.time ) // are we still within time barrier?
+            _releaseCountByStation.TryGetValue(s.Type, out releaseCount);
+        
+        releaseCount++;
+        releaseCount = Mathf.Min(releaseCount, 10); // safeguard!
+
+        switch (s.Type)
         {
             case Stationary.StationaryType.Missile:
-                AudioClip clip =  Resources.Load<AudioClip>("sounds/fox 1");
+                AudioClip clip =  Resources.Load<AudioClip>(string.Format("sounds/fox {0}",releaseCount));
                 _audio.PlayOneShot(clip);
                 break;
 
             default:
                 break;
         }
+
+        // update counters
+        _memoryByStation[s.Type] = Time.time + _releaseMemory;
+        _releaseCountByStation[s.Type] = releaseCount;
     }
 }
