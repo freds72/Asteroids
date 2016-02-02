@@ -10,7 +10,8 @@ public class Stationary {
     public enum StationaryType
     {
         Missile,
-        Bomb
+        Bomb,
+        Gun
     };
     public string Name;
     public int Ammo;
@@ -24,7 +25,7 @@ public class Stationary {
         return Ammo > 0 && Time.time >= _nextFireTime;
     }
 
-    public GameObject Spawn(Transform transform)
+    public virtual GameObject Spawn(Transform transform)
     {
 #if DEBUG
         if (!CanSpawn())

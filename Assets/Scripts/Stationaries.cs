@@ -3,6 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class Stationaries : MonoBehaviour {
+    public delegate void SelectedEvent(Stationary o);
+    public event SelectedEvent OnSelectionChanged;
+    public delegate void ReleaseEvent(Stationary s, GameObject go);
+    public event ReleaseEvent OnRelease;
+
     public List<Stationary> Items = new List<Stationary>(4);
     public Radar Radar;
     int _selected = 0;
@@ -13,7 +18,7 @@ public class Stationaries : MonoBehaviour {
             Radar = GetComponent<Radar>();
 	}
 	
-    Stationary SelectedItem
+    public Stationary SelectedItem
     {
         get
         {
@@ -21,6 +26,28 @@ public class Stationaries : MonoBehaviour {
                 return Items[_selected];
             return null;
         }
+    }
+
+    public void Next()
+    {
+        int prev = _selected;
+        _selected++;
+        if (_selected >= Items.Count)
+            _selected = 0;
+
+        if (prev != _selected && OnSelectionChanged != null && SelectedItem != null)
+            OnSelectionChanged(SelectedItem);
+    }
+
+    public void Prev()
+    {
+        int prev = _selected;
+        _selected--;
+        if (_selected < 0)
+            _selected = Mathf.Max(0, Items.Count - 1);
+
+        if (prev != _selected && OnSelectionChanged != null && SelectedItem != null)
+            OnSelectionChanged(SelectedItem);
     }
 
 	// Update is called once per frame
@@ -32,6 +59,8 @@ public class Stationaries : MonoBehaviour {
                  item.CanSpawn())
             {
                 GameObject go = item.Spawn(transform);
+                if (OnRelease != null)
+                    OnRelease(item, go);
                 Transform tgt = Radar.AcquireLock;
                 if ( tgt != null )
                 {

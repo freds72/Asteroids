@@ -7,8 +7,7 @@ using Vectrosity;
 // A radar attached to a GameObject
 public class Radar : MonoBehaviour
 {
-    public List<RadarMode> Modes = new List<RadarMode>();
-    public RadarMode EyeMode = new RadarMode() { Label = "Eye", Angle = 120, MaxRange = 5, MinRange = 0, Memory = 5.0f, ScanPeriod = 1.0f };
+    public RadarMode Specs = new RadarMode() { Label = "Radar", Angle = 120, MaxRange = 40, MinRange = 5, Memory = 1.0f, ScanPeriod = 0.5f };
     public GameObject SelectionPrefab;
     public GameObject LockPrefab;
 
@@ -18,100 +17,73 @@ public class Radar : MonoBehaviour
 
     public float SelectionSpeed = 0.35f;
 
-    List<RadarCache> _cache = new List<RadarCache>();
-    List<VectorLine> _cones = new List<VectorLine>();
+    RadarCache _radarCache;
+    VectorLine _radarCone;
 
     RadarSelection _selection;
     List<Transform> _locksInstanceCache = new List<Transform>(4);
     RadarCache _eyeCache;
     public int DefaultMode = 0;
-    int _selectedMode = 0;
     int _lastSelectedItem = -1;
+
     // Use this for initialization
     void Start()
     {
-        foreach (RadarMode it in Modes)
-        {
-            _cache.Add(new RadarCache(transform, it));
+        _radarCache = new RadarCache(transform, Specs);
 
-            // radar cone
-            float leftAngle = Mathf.Deg2Rad * (180 - it.Angle);
-            float rightAngle = Mathf.Deg2Rad * it.Angle;
-            List<Vector3> points = new List<Vector3>(new Vector3[] 
+        // radar cone
+        float leftAngle = Mathf.Deg2Rad * (180 - Specs.Angle);
+        float rightAngle = Mathf.Deg2Rad * Specs.Angle;
+        List<Vector3> points = new List<Vector3>(new Vector3[] 
             { 
-                new Vector3(it.MinRange * Mathf.Cos(rightAngle), it.MinRange * Mathf.Sin(rightAngle),0),
-                new Vector3(it.MaxRange * Mathf.Cos(rightAngle), it.MaxRange * Mathf.Sin(rightAngle),0),
-                new Vector3(it.MinRange * Mathf.Cos(leftAngle), it.MinRange * Mathf.Sin(leftAngle),0),
-                new Vector3(it.MaxRange * Mathf.Cos(leftAngle), it.MaxRange * Mathf.Sin(leftAngle),0)
+                new Vector3(Specs.MinRange * Mathf.Cos(rightAngle), Specs.MinRange * Mathf.Sin(rightAngle),0),
+                new Vector3(Specs.MaxRange * Mathf.Cos(rightAngle), Specs.MaxRange * Mathf.Sin(rightAngle),0),
+                new Vector3(Specs.MinRange * Mathf.Cos(leftAngle), Specs.MinRange * Mathf.Sin(leftAngle),0),
+                new Vector3(Specs.MaxRange * Mathf.Cos(leftAngle), Specs.MaxRange * Mathf.Sin(leftAngle),0)
             });
-            VectorLine line;
-            if (LineTexture == null)
-                line = new VectorLine("RadarCone_" + it.Label, points, LineWidth, LineType.Discrete);
-            else
-                line = new VectorLine("RadarCone_" + it.Label, points, LineTexture, LineWidth, LineType.Discrete);
-            line.textureScale = TextureScale;
-            
-            VectorManager.ObjectSetup(gameObject, line, Visibility.Dynamic, Brightness.None);
-            line.active = false;
+        VectorLine line;
+        if (LineTexture == null)
+            line = new VectorLine(GetType().Name, points, LineWidth, LineType.Discrete);
+        else
+            line = new VectorLine(GetType().Name, points, LineTexture, LineWidth, LineType.Discrete);
+        line.textureScale = TextureScale;
 
-            _cones.Add(line);
-        }
-        _eyeCache = new RadarCache(transform, EyeMode);
+        VectorManager.ObjectSetup(gameObject, line, Visibility.Dynamic, Brightness.None);
+        line.active = false;
 
-        // change to default selection
-        ChangeMode(DefaultMode);
+        _radarCone = line;
 
         _selection = Instantiate(SelectionPrefab).GetComponent<RadarSelection>();
         _selection.gameObject.SetActive(false);
     }
 
-    void ChangeMode(int mode)
+    void OnDisable()
     {
-        // pause scan of previous mode
-        if (_selectedMode != mode)
-        {
-            _cache[_selectedMode].Pause();
-            _cones[_selectedMode].active = false;
-        }
+        _radarCache.Pause();
+        if ( _selection != null )
+            _selection.gameObject.SetActive(false);
         _lastSelectedItem = -1;
-        _selectedMode = mode;
-        _cones[_selectedMode].active = true;
-    }
-
-    public void NextMode()
-    {
-        ChangeMode(Mathf.Min(_selectedMode + 1, Modes.Count - 1));
-    }
-
-    public void PreviousMode()
-    {
-        ChangeMode(Mathf.Max(_selectedMode - 1, 0));
     }
 
     // Update is called once per frame
     float _lastFrameHValue = 0;
     void Update()
     {
-        _eyeCache.Update();
-
-        if (Modes.Count == 0)
-            return; // nothing to do
-        RadarCache activeRadar = _cache[_selectedMode];
-        activeRadar.Update();
+        _radarCache.Update();
 
         // change selection
         if (Input.GetAxis("RightStickHorizontal") == 1 && _lastFrameHValue != 1)
-            activeRadar.Next();
+            _radarCache.Next();
         else if (Input.GetAxis("RightStickHorizontal") == -1 && _lastFrameHValue != -1)
-            activeRadar.Previous();
+            _radarCache.Previous();
 
-        if (Input.GetButtonUp("Lock") && activeRadar.SelectedItem != null)
-            activeRadar.SelectedItem.IsLocked = !activeRadar.SelectedItem.IsLocked;
+        if (Input.GetButtonUp("Lock") && _radarCache.SelectedItem != null)
+            _radarCache.SelectedItem.IsLocked = !_radarCache.SelectedItem.IsLocked;
 
         _lastFrameHValue = Input.GetAxis("RightStickHorizontal");
 
         // update tracker positions
-        RadarItem selectedItem = activeRadar.SelectedItem;
+        RadarItem selectedItem = _radarCache.SelectedItem;
         if ( selectedItem != null )
         {
             if (_lastSelectedItem != selectedItem.InstanceID)
@@ -131,7 +103,7 @@ public class Radar : MonoBehaviour
 
         // update target lock position
         int i = 0;
-        foreach(RadarItem it in activeRadar)
+        foreach (RadarItem it in _radarCache)
         {
             if (it.IsLocked)
             {
@@ -194,7 +166,7 @@ public class Radar : MonoBehaviour
     {
         get
         {
-            RadarItem lockedIem = _cache[_selectedMode].AcquireLock;
+            RadarItem lockedIem = _radarCache.AcquireLock;
             return lockedIem == null ? null : lockedIem.Target.transform;
         }
     }

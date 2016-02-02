@@ -54,7 +54,6 @@ public class ScreenWrapBehaviour : MonoBehaviour {
         // So, we get the ships viewport position
         var viewportPosition = cam.WorldToViewportPoint(transform.position);
 
-        Debug.Log(string.Format("{0} / {1}", newPosition.x, newPosition.y));
         if (viewportPosition.x < 0 )
             newPosition.x += screenWidth;
         if (viewportPosition.x > 1)
