@@ -27,7 +27,7 @@ public class StatusPanel : MonoBehaviour {
 
     void _stations_OnRelease(Stationary s, GameObject go)
     {
-        AmmoPanel.Update(s.Ammo);
+        AmmoPanel.UpdateAmmo(s.Ammo);
     }
 
     void _stations_OnSelectionChanged(Stationary s)

@@ -1,6 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/// <summary>
+/// Moves an object along the Vector3.up direction.
+/// </summary>
 public class ConstantTranslation : MonoBehaviour {
     /// <summary>
     /// Velocity

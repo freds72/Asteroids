@@ -51,7 +51,10 @@ public class Stationary {
                 Transform t = Anchors
                     .OrderBy(i => Vector3.SqrMagnitude(Aim.position - i.position))
                     .First();
-                t.LookAt(Aim);
+
+                Vector3 dir = Aim.position - t.position;
+                float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+                t.rotation = Quaternion.Euler(0,0,angle - 90);
                 return t;
         }
         return Anchors[0];

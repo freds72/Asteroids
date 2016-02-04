@@ -6,15 +6,17 @@ using System.Collections;
 /// </summary>
 public class PlayerTrackerController : MonoBehaviour {
 
+    public float Velocity = 5;
     public string Tag = "Player";
 
 	// Use this for initialization
 	void Start () {
 	
 	}
-	
-	// Update is called once per frame
-	void Update () {
+
+    // LateUpdate called after all objects have been updated
+    void LateUpdate()
+    {
         GameObject[] players = GameObject.FindGameObjectsWithTag(Tag);
         if ( players.Length == 0 )
             return; // nothing to track
@@ -27,7 +29,16 @@ public class PlayerTrackerController : MonoBehaviour {
             center += it.transform.position;
             n++;
         }
-        // TODO: smooth lerp to new position
-        transform.position = new Vector3(center.x / n, center.y / n, transform.position.z);
+
+        // keep original z component
+        center.z = transform.position.z;
+        // where should we go?
+        Vector3 targetDirection = center - transform.position;
+        // how fast (based on distance from target)?
+        float interpVelocity = targetDirection.magnitude * Velocity;
+
+        Vector3 targetPos = transform.position + (targetDirection.normalized * interpVelocity * Time.deltaTime);
+
+        transform.position = Vector3.Lerp(transform.position, targetPos, 0.25f);
 	}
 }

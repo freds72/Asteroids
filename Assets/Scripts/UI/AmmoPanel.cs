@@ -45,7 +45,7 @@ public class AmmoPanel : MonoBehaviour {
         }
     }
 
-    public void Update(int ammo)
+    public void UpdateAmmo(int ammo)
     {
         int slices = IconPrefab.Slices;
         int n = Mathf.RoundToInt(_maxAmmo / slices + 0.5f);

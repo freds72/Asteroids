@@ -7,12 +7,10 @@ public class GunstarController : MonoBehaviour {
     public float RotationSpeed = 1.0f;
     public float Velocity = 1.0f;
     public GameObject GunSightPrefab;
-    public List<Transform> GunAnchors;
-    public List<Transform> MissileAnchors;
     AudioSource _audio;
     Stationaries _stations;
     Radar _radar;
-    bool _useTwinStick = true;
+    bool _missileMode = true;
     GameObject _sight;
     
 	// Use this for initialization
@@ -21,7 +19,16 @@ public class GunstarController : MonoBehaviour {
         _audio = GetComponent<AudioSource>();
         _stations = GetComponent<Stationaries>();
         _sight = Instantiate(GunSightPrefab, transform.position, Quaternion.identity) as GameObject;
+        TargetLink tl = _sight.GetComponent<TargetLink>();
+        if (tl != null)
+            tl.Target = transform;
         _sight.SetActive(false);
+        
+        // wire stations to gunsight
+        foreach(Stationary it in _stations.Items)
+        {
+            it.Aim = _sight.transform;
+        }
 
         // synchronize input with selected station
         RefreshSelectedStation();
@@ -43,12 +50,12 @@ public class GunstarController : MonoBehaviour {
             {
                 case Stationary.StationaryType.Missile:
                     _radar.enabled = true;
-                    _useTwinStick = false;
+                    _missileMode = true;
                     _sight.SetActive(false);
                     break;
                 case Stationary.StationaryType.Gun:
                     _radar.enabled = false;
-                    _useTwinStick = true;
+                    _missileMode = false;
                     _sight.SetActive(true);
                     break;
             }
@@ -60,36 +67,22 @@ public class GunstarController : MonoBehaviour {
         if (Input.GetButtonUp("WeaponChange"))
             _stations.Next();
 
-        if (!_useTwinStick)
+        if (_missileMode)
         {
             float lh = Input.GetAxis("LeftStickHorizontal");
 
             Transform t = RotationTarget == null ? this.transform : RotationTarget.transform;
             t.rotation *= Quaternion.Euler(0.0f, 0.0f, -lh * RotationSpeed * Time.deltaTime);
         }
-        else
+        else // twin stick style
         {
             float lh = Input.GetAxis("LeftStickHorizontal");
             float lv = Input.GetAxis("LeftStickVertical");
-            float rh = Input.GetAxis("RightStickHorizontal");
-            float rv = Input.GetAxis("RightStickVertical");
-
+            
             //Assumes you're looking down the z axis
             Vector3 move = new Vector3(lh, lv, 0.0f);
             if (move.sqrMagnitude > 0)
                 transform.position += Velocity * Time.deltaTime * move.normalized;
-            //Assumes you're looking down the z axis and that you are looking down on the avatar
-            Vector3 direction = new Vector3(rh, rv, 0.0f);
-            if (direction.sqrMagnitude > 0.1f)
-            {
-                direction.Normalize();
-                // get the angle of the difference in radians, then convert to degrees using Rad2Deg
-                float zrot = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-
-                // set the z axis rotation of this transform in degrees using Euler
-                Transform t = RotationTarget == null ? this.transform : RotationTarget.transform;
-                t.rotation = Quaternion.Euler(0.0f, 0.0f, zrot - 90);
-            }
         }
 	}
 }

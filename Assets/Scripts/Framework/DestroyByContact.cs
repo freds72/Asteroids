@@ -23,7 +23,7 @@ public class DestroyByContact : MonoBehaviour
             return;
 
         Debug.Log(string.Format("Collider: {0}", col.collider.tag));
-        DestroyObject(this.gameObject);
+        Destroy(gameObject);
         if (DestroyedPrefab != null)
             Instantiate(DestroyedPrefab, transform.position, transform.rotation);
     }
