@@ -5,7 +5,6 @@ public class AutoDestroy :
     MonoBehaviour,
     IDestroyable
 {
-
     public float Duration = 1.0f;
     // Gameobject to spawn when this one dies
     public GameObject Prefab;

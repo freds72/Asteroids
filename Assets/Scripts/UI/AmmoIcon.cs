@@ -13,8 +13,7 @@ public class AmmoIcon : MonoBehaviour {
         set 
         { 
             _ammo = value;
-            StartCoroutine(Refresh());
-            Refresh();
+            StartCoroutine(Refresh(_ammo));
         }
     }
     Image _image;
@@ -24,9 +23,9 @@ public class AmmoIcon : MonoBehaviour {
         _image = GetComponent<Image>();
 	}
 
-    IEnumerator Refresh()
+    IEnumerator Refresh(int count)
     {
         yield return new WaitForEndOfFrame();
-        _image.fillAmount = _ammo / Slices;
+        _image.fillAmount = (float)count / Slices;
     }
 }

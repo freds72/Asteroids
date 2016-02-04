@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using System;
 
 public class StatusPanel : MonoBehaviour {
 
@@ -20,8 +21,13 @@ public class StatusPanel : MonoBehaviour {
         _animator = GetComponent<Animator>();
         _stations = Player.GetComponent<Stationaries>();
         _stations.OnSelectionChanged += _stations_OnSelectionChanged;
-
+        _stations.OnRelease += _stations_OnRelease;
         Refresh(_stations.SelectedItem);
+    }
+
+    void _stations_OnRelease(Stationary s, GameObject go)
+    {
+        AmmoPanel.Update(s.Ammo);
     }
 
     void _stations_OnSelectionChanged(Stationary s)
@@ -32,7 +38,19 @@ public class StatusPanel : MonoBehaviour {
     void Refresh(Stationary s)
     {
         SelectedStationText.text = s.Name;
-        AmmoPanel.IconPrefab = MissileAmmoPrefab;
+        switch(s.Type)
+        {
+            case Stationary.StationaryType.Missile:
+                AmmoPanel.IconPrefab = MissileAmmoPrefab;
+                break;
+            case Stationary.StationaryType.Gun:
+                AmmoPanel.IconPrefab = MissileAmmoPrefab;
+                break;
+
+            default:
+                throw new NotImplementedException("Unsupported ammo type");
+        }
+        
         AmmoPanel.Station = s;
     }
 
@@ -44,6 +62,6 @@ public class StatusPanel : MonoBehaviour {
         if (Input.GetButtonUp("Status"))
             _animator.SetBool(_openParam, false);
 
-        HealthImage.fillAmount = 0.5f * Mathf.Abs(Mathf.Sin(2 * Time.time));
+        HealthImage.fillAmount = 0.85f;
 	}
 }

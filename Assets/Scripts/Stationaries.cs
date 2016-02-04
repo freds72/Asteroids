@@ -1,8 +1,9 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-public class Stationaries : MonoBehaviour {
+public class Stationaries : MonoBehaviour 
+{
     public delegate void SelectedEvent(Stationary o);
     public event SelectedEvent OnSelectionChanged;
     public delegate void ReleaseEvent(Stationary s, GameObject go);
@@ -16,6 +17,11 @@ public class Stationaries : MonoBehaviour {
 	void Start () {
         if (Radar == null)
             Radar = GetComponent<Radar>();
+		foreach(Stationary it in Items)
+		{
+			if ( it.AutoAmmoDelay > 0 )
+				StartCoroutine(AutoFill(it));
+		}
 	}
 	
     public Stationary SelectedItem
@@ -58,7 +64,7 @@ public class Stationaries : MonoBehaviour {
             if ( item != null && 
                  item.CanSpawn())
             {
-                GameObject go = item.Spawn(transform);
+                GameObject go = item.Spawn();
                 if (OnRelease != null)
                     OnRelease(item, go);
                 Transform tgt = Radar.AcquireLock;
@@ -70,5 +76,15 @@ public class Stationaries : MonoBehaviour {
                 }
             }
         }
+	}
+
+	IEnumerator AutoFill(Stationary s)
+	{
+		int max = s.Ammo;
+		while(true)
+		{
+			s.Ammo = Mathf.Min(max, s.Ammo + 1);
+			yield return new WaitForSeconds(s.AutoAmmoDelay);
+		}
 	}
 }

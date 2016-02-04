@@ -1,20 +1,28 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class GunstarController : MonoBehaviour {
     public GameObject RotationTarget;
     public float RotationSpeed = 1.0f;
     public float Velocity = 1.0f;
+    public GameObject GunSightPrefab;
+    public List<Transform> GunAnchors;
+    public List<Transform> MissileAnchors;
     AudioSource _audio;
     Stationaries _stations;
     Radar _radar;
     bool _useTwinStick = true;
-
+    GameObject _sight;
+    
 	// Use this for initialization
 	void Start () {
         _radar = GetComponent<Radar>();
         _audio = GetComponent<AudioSource>();
         _stations = GetComponent<Stationaries>();
+        _sight = Instantiate(GunSightPrefab, transform.position, Quaternion.identity) as GameObject;
+        _sight.SetActive(false);
+
         // synchronize input with selected station
         RefreshSelectedStation();
         if ( _stations != null )
@@ -36,10 +44,12 @@ public class GunstarController : MonoBehaviour {
                 case Stationary.StationaryType.Missile:
                     _radar.enabled = true;
                     _useTwinStick = false;
+                    _sight.SetActive(false);
                     break;
                 case Stationary.StationaryType.Gun:
                     _radar.enabled = false;
                     _useTwinStick = true;
+                    _sight.SetActive(true);
                     break;
             }
         }
