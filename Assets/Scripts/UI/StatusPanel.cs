@@ -7,6 +7,7 @@ using System;
 public class StatusPanel : MonoBehaviour {
 
     int _openParam = Animator.StringToHash("open");
+    int _hpParam = Animator.StringToHash("hp");
     Animator _animator;
     public Image HealthImage;
     public Text SelectedStationText;
@@ -16,25 +17,28 @@ public class StatusPanel : MonoBehaviour {
     public AmmoIcon GunAmmoPrefab;
 
     Stationaries _stations;
+    HitPoints _health;
 	// Use this for initialization
 	void Start () {
         _animator = GetComponent<Animator>();
         _stations = Player.GetComponent<Stationaries>();
-        _stations.OnSelectionChanged += _stations_OnSelectionChanged;
-        _stations.OnRelease += _stations_OnRelease;
+        _stations.OnSelectionChanged += (s) => { Refresh(s); };
+        _stations.OnRelease += (s,go) => {
+            // make sure the event applies to the right station!!
+            if (s.Name == SelectedStationText.text)
+                AmmoPanel.UpdateAmmo(s.Ammo); 
+        };
+        _stations.OnRefill += (s) => {
+            // make sure the event applies to the right station!!
+            if (s.Name == SelectedStationText.text)
+                AmmoPanel.UpdateAmmo(s.Ammo); 
+        };
         Refresh(_stations.SelectedItem);
+        
+        // hit points
+        _health = Player.GetComponent<HitPoints>();
     }
 
-    void _stations_OnRelease(Stationary s, GameObject go)
-    {
-        AmmoPanel.UpdateAmmo(s.Ammo);
-    }
-
-    void _stations_OnSelectionChanged(Stationary s)
-    {
-        Refresh(s);
-    }
-	
     void Refresh(Stationary s)
     {
         SelectedStationText.text = s.Name;
@@ -44,7 +48,7 @@ public class StatusPanel : MonoBehaviour {
                 AmmoPanel.IconPrefab = MissileAmmoPrefab;
                 break;
             case Stationary.StationaryType.Gun:
-                AmmoPanel.IconPrefab = MissileAmmoPrefab;
+                AmmoPanel.IconPrefab = GunAmmoPrefab;
                 break;
 
             default:
@@ -62,6 +66,10 @@ public class StatusPanel : MonoBehaviour {
         if (Input.GetButtonUp("Status"))
             _animator.SetBool(_openParam, false);
 
-        HealthImage.fillAmount = 0.85f;
+        // health is temperature, reverse
+        float hpRatio = 1.0f - (float)_health.HP / _health.MaxHP;
+
+        HealthImage.fillAmount = 0.5f * hpRatio; // scale is [0;0.5]
+        _animator.SetFloat(_hpParam, hpRatio);
 	}
 }

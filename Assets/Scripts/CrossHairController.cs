@@ -12,8 +12,9 @@ public class CrossHairController : MonoBehaviour
 	public float RestDelay = 0.5f;
 	public float Scaling = 4;
 	
-	int _isAiming = 0;
     Transform _parent;
+    float _screenWidth;
+    float _screenHeight;
 
 	void Start()
 	{
@@ -29,31 +30,23 @@ public class CrossHairController : MonoBehaviour
         float len = direction.sqrMagnitude;
         if (len > DeadZone * DeadZone)
         {
-            // stop rest shift
-            _isAiming++;
             transform.position = _parent.position + Scaling * direction;
         }
-            /*
-        else
-        {
-            _isAiming++;
-            StartCoroutine(GoToRest());
-        } */
-    }
+        /*
+        var cam = Camera.main;
 
-	/*
-	IEnumerator GoToRest()
-	{
-		int flag = _isAiming;
-		float now = Time.time;
-        Vector3 sourcePosition = transform.position;
-        float elapsedTime = Vector3.Distance()
-		// move to rest position unless cancelled		
-        while(_isAiming==flag)
-		{
-            transform.position = Vector3.Lerp(sourcePosition, , Mathf.SmoothStep(0, 1, (elapsedTime / RestDelay)));
-            elapsedTime += Time.deltaTime;
-		}
-	}
-     * */
+        var screenBottomLeft = cam.ViewportToWorldPoint(new Vector3(0, 0, transform.position.z));
+        var screenTopRight = cam.ViewportToWorldPoint(new Vector3(1, 1, transform.position.z));
+
+        // The width is then equal to difference between the rightmost and leftmost x-coordinates
+        _screenWidth = screenTopRight.x - screenBottomLeft.x;
+        // The height, similar to above is the difference between the topmost and the bottom yycoordinates
+        _screenHeight = screenTopRight.y - screenBottomLeft.y;
+
+        transform.position = new Vector3(
+            Mathf.Clamp(transform.position.x, 0, _screenWidth),
+            Mathf.Clamp(transform.position.y, 0, _screenHeight),
+            0);
+         * */
+    }
 }

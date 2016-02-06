@@ -6,25 +6,30 @@ public class DestroyByContact : MonoBehaviour
     public string IgnoreTag = null;
     public GameObject DestroyedPrefab;
     
-    void OnCollisionEnter2D(Collision2D col)
+    void DoCollision(GameObject collider)
     {
-        if (col.collider.tag.Equals(IgnoreTag))
+        if (collider.tag.Equals(IgnoreTag))
             return;
 
-        Debug.Log(string.Format("Collider: {0}", col.collider.tag));
         DestroyObject(this.gameObject);
-        if ( DestroyedPrefab != null)
+        if (DestroyedPrefab != null)
             Instantiate(DestroyedPrefab, transform.position, transform.rotation);
+    }
+
+    void OnCollisionEnter2D(Collision2D col)
+    {
+        DoCollision(col.collider.gameObject);
     }
 
     void OnCollisionEnter(Collision col)
     {
-        if (col.collider.tag.Equals(IgnoreTag))
-            return;
-
-        Debug.Log(string.Format("Collider: {0}", col.collider.tag));
-        Destroy(gameObject);
-        if (DestroyedPrefab != null)
-            Instantiate(DestroyedPrefab, transform.position, transform.rotation);
+        DoCollision(col.collider.gameObject);
     }
+
+    void OnTriggerEnter(Collider other)
+    {
+        Debug.Log(string.Format("Trigger: {0}", other.gameObject));
+        DoCollision(other.gameObject);
+    }
+
 }

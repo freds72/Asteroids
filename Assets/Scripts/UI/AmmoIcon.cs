@@ -2,7 +2,6 @@
 using System.Collections;
 using UnityEngine.UI;
 
-[RequireComponent(typeof(Image))]
 public class AmmoIcon : MonoBehaviour {
     public int Slices = 4;
 
@@ -13,19 +12,25 @@ public class AmmoIcon : MonoBehaviour {
         set 
         { 
             _ammo = value;
-            StartCoroutine(Refresh(_ammo));
+            StartCoroutine(Refresh());
         }
     }
-    Image _image;
+    public Image Icon;
+
 	// Use this for initialization
 	void Start ()
     {
-        _image = GetComponent<Image>();
+        StartCoroutine(Refresh());
 	}
 
-    IEnumerator Refresh(int count)
+    IEnumerator Refresh()
     {
         yield return new WaitForEndOfFrame();
-        _image.fillAmount = (float)count / Slices;
+        Refresh(_ammo);
+    }
+
+    void Refresh(int count)
+    {
+        Icon.fillAmount = (float)count / Slices;
     }
 }

@@ -8,6 +8,8 @@ public class Stationaries : MonoBehaviour
     public event SelectedEvent OnSelectionChanged;
     public delegate void ReleaseEvent(Stationary s, GameObject go);
     public event ReleaseEvent OnRelease;
+    public delegate void RefillEvent(Stationary s);
+    public event RefillEvent OnRefill;
 
     public List<Stationary> Items = new List<Stationary>(4);
     public Radar Radar;
@@ -19,8 +21,8 @@ public class Stationaries : MonoBehaviour
             Radar = GetComponent<Radar>();
 		foreach(Stationary it in Items)
 		{
-			if ( it.AutoAmmoDelay > 0 )
-				StartCoroutine(AutoFill(it));
+            if (it.AutoAmmoDelay > 0)
+                StartCoroutine(AutoFill(it));
 		}
 	}
 	
@@ -55,25 +57,20 @@ public class Stationaries : MonoBehaviour
         if (prev != _selected && OnSelectionChanged != null && SelectedItem != null)
             OnSelectionChanged(SelectedItem);
     }
-
-	// Update is called once per frame
-	void Update () {
-	    if ( Input.GetButtonUp("Fire"))
+	
+	public void Release() {
+        Stationary item = SelectedItem;
+        if ( item != null &&  item.CanSpawn())
         {
-            Stationary item = SelectedItem;
-            if ( item != null && 
-                 item.CanSpawn())
+            GameObject go = item.Spawn();
+            if (OnRelease != null)
+                OnRelease(item, go);
+            Transform tgt = Radar.AcquireLock;
+            if ( tgt != null )
             {
-                GameObject go = item.Spawn();
-                if (OnRelease != null)
-                    OnRelease(item, go);
-                Transform tgt = Radar.AcquireLock;
-                if ( tgt != null )
-                {
-                    // get the target interface
-                    TargetLink link = go.GetComponent<TargetLink>();
-                    link.Target = tgt;
-                }
+                // get the target interface
+                TargetLink link = go.GetComponent<TargetLink>();
+                link.Target = tgt;
             }
         }
 	}
@@ -84,6 +81,8 @@ public class Stationaries : MonoBehaviour
 		while(true)
 		{
 			s.Ammo = Mathf.Min(max, s.Ammo + 1);
+            if (OnRefill != null)
+                OnRefill(s);
 			yield return new WaitForSeconds(s.AutoAmmoDelay);
 		}
 	}
