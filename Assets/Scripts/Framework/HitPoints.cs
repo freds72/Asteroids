@@ -13,8 +13,6 @@ public class HitPoints : MonoBehaviour
     // prefab to spawn when dying
     public GameObject DiePrefab;
 
-    public List<string> IgnoreTags = new List<string>();
-
 	public void Hit(int hitpoints)
 	{
 		HP = Mathf.Max(HP - hitpoints,0);
@@ -22,9 +20,11 @@ public class HitPoints : MonoBehaviour
 	
 	public bool IsDead
 	{ get { return HP <= 0; } }
-	
+
+    ITagCollection _tags;
 	void Start()
 	{
+        _tags = GetComponent<ITagCollection>();
 	}
 	
 	float _bonus = 0;
@@ -46,13 +46,14 @@ public class HitPoints : MonoBehaviour
 
     void DoCollision(GameObject collider)
     {
-        Damage dmg = collider.GetComponent<Damage>();
-        if (dmg == null)
+        IWeapon wp = collider.GetComponent<IWeapon>();
+        if (wp == null)
             return;
-        if (IgnoreTags.Contains(collider.tag))
+        
+        if (wp.IgnoreTags.Intersects(_tags))
             return;
 
-        Hit(dmg.HitPoints);
+        Hit(wp.HitPoints);
     }
 
     void OnCollisionEnter(Collision col)

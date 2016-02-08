@@ -10,8 +10,8 @@ public class RWR : MonoBehaviour
 	public float LaunchDetectionRange = 10;
     public float MinRange = 0.5f;
 	public float ScanDelay = 0.01f;
-	public string RadarTag = "Emitter";
-	public string LaunchTag = "Blast";
+	public AllTags.Values RadarTag = AllTags.Values.Emitter;
+    public AllTags.Values LaunchTag = AllTags.Values.Launch;
     public OnOffSwitch RadarWarningPrefab;
     public OnOffSwitch LaunchWarningPrefab;
 	// number of display sections
@@ -55,7 +55,7 @@ public class RWR : MonoBehaviour
 	{
 	}
 
-    bool Scan(string tag, bool[] states)
+    bool Scan(AllTags.Values tag, bool[] states)
     {
         bool active = false;
         Array.Clear(states, 0, states.Length);
