@@ -4,7 +4,7 @@ using System.Collections;
 /// <summary>
 /// Helper class to store all known tags for the game.
 /// </summary>
-public class AllTags
+public static class AllTags
 {
     public enum Values
     {
@@ -13,9 +13,10 @@ public class AllTags
         Player2 = 0x2,
         Player3 = 0x3,
         Player4 = 0x4,
-        AnyPlayer = 0x5,
+        Player = 0x5,
         Enemy = 0x6,
         Emitter = 0x7,
-        Launch = 0x8
+        Launch = 0x8,
+        Spawn = 0x9
     };
 }

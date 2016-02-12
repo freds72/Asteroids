@@ -59,7 +59,7 @@ public class RWR : MonoBehaviour
     {
         bool active = false;
         Array.Clear(states, 0, states.Length);
-        foreach (GameObject it in TagManager.Self.Find(tag))
+        foreach (GameObject it in TagManager.Find(tag))
         {
             Vector3 diff = it.transform.position - transform.position;
             // too close?

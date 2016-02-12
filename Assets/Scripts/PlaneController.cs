@@ -39,7 +39,7 @@ public class PlaneController : MonoBehaviour {
         this.transform.position += Time.deltaTime * Velocity * t.up;
     }
 
-    void StationRelease(Stationary s)
+    void StationRelease(Stationary s, Transform stationPosition)
     {
         float memoryTime = 0;
         _memoryByStation.TryGetValue(s.Type, out memoryTime);

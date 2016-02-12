@@ -1,11 +1,11 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System;
 
 [Serializable()]
 public class RadarMode {
     public string Label = "AA";
-    public string Tag = "AirEnemy";
+    public TagCollection<AllTags.Values> Tags = new TagCollection<AllTags.Values>();
     public float MaxRange = 120;
     public float MinRange = 1;
     public float Angle = 45;

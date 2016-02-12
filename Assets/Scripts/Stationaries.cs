@@ -13,6 +13,8 @@ public class Stationaries : MonoBehaviour
 
     public List<Stationary> Items = new List<Stationary>(4);
     public Radar Radar;
+    AudioSource _audio;
+    
     int _selected = 0;
 
 	// Use this for initialization
@@ -24,6 +26,7 @@ public class Stationaries : MonoBehaviour
             if (it.AutoAmmoDelay > 0)
                 StartCoroutine(AutoFill(it));
 		}
+		_audio = GetComponent<AudioSource>();
 	}
 	
     public Stationary SelectedItem
@@ -65,12 +68,20 @@ public class Stationaries : MonoBehaviour
             GameObject go = item.Spawn();
             if (OnRelease != null)
                 OnRelease(item, go);
-            Transform tgt = Radar.AcquireLock;
+            Transform tgt = Radar.PopLock();
             if ( tgt != null )
             {
                 // get the target interface
                 TargetLink link = go.GetComponent<TargetLink>();
                 link.Target = tgt;
+            }
+            // sounds
+            if (_audio != null &&
+            	item.Clips != null &&
+            	item.Clips.Count != 0)
+            {
+            	AudioClip clip = item.Clips[Random.Range(0, item.Clips.Count)];
+            	_audio.PlayOneShot(clip);
             }
         }
 	}

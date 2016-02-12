@@ -6,7 +6,7 @@ using System.Linq;
 
 [Serializable()]
 public class Stationary {
-    public delegate void ReleaseEvent(Stationary s);
+    public delegate void ReleaseEvent(Stationary s, Transform transform);
     public event ReleaseEvent OnRelease;
 
     public enum StationaryType
@@ -31,6 +31,7 @@ public class Stationary {
     };
     public ReleaseType ReleaseMode;
     public Transform Aim;
+    public List<AudioClip> Clips;
     
     float _nextFireTime = 0;    
     public bool CanSpawn()
@@ -69,10 +70,10 @@ public class Stationary {
 
         _nextFireTime = Time.time + Delay;
         Ammo--;
-        if (OnRelease != null)
-            OnRelease(this);
-
         Transform transform = NextSpawnLocation();
+        if (OnRelease != null)
+            OnRelease(this, transform);
+
         return (GameObject)MonoBehaviour.Instantiate(Prefab,
             transform.position,
             transform.rotation);

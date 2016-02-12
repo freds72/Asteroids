@@ -8,47 +8,34 @@ using System.Collections.Generic;
 /// <remarks>
 /// The class must be derived to use the right set of tags.
 /// </remarks>
-public abstract class TagCollectionBehaviour<T> : 
+public abstract class TagCollectionBehaviour<T> :
     MonoBehaviour,
-    ITagCollection   
-    where T: struct
+    ITagCollection
+    where T:struct
 {
-	public List<T> Tags = new List<T>();
-	
-	void Awake()
-	{
-        foreach (T it in Tags)
-            Mask |= Convert.ToInt64(it);
+    public List<T> Tags = new List<T>();
 
-		TagManager.Self.Register(this);
-	}
-
-	void OnDestroy()
-	{
-		TagManager.Self.Unregister(this);
-	}
-
-    /// <summary>
-    /// Bitmask for tags
-    /// </summary>
-    public long Mask
+    ITagCollection _tags;
+    void Awake()
     {
-        get;
-        private set;
+        _tags = new TagCollection<T>(Tags);
+        TagManager.Register(_tags, gameObject);
     }
 
-    /// <summary>
-    /// Returns the underlying gameobject
-    /// </summary>
-    public GameObject GameObject
+    void OnDestroy()
     {
-        get { return gameObject; }
+        TagManager.Unregister(_tags, gameObject);
     }
+
+    public long Mask { get { return _tags.Mask; } }
 
     public bool Intersects(ITagCollection other)
     {
-        if (other == null)
-            return false;
-        return (Mask & other.Mask) != 0L;
+        return _tags.Intersects(other);
+    }
+
+    public bool Equals(ITagCollection other)
+    {
+        return _tags.Equals(other);
     }
 }

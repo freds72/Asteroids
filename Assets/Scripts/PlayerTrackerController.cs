@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
 /// <summary>
@@ -7,7 +7,9 @@ using System.Collections;
 public class PlayerTrackerController : MonoBehaviour {
 
     public float Velocity = 5;
-    public string Tag = "Player";
+    public AllTags.Values Tag = AllTags.Values.Player;
+    // how much do we prefer player 1?
+    public float Player1Stickiness = 0;
 
 	// Use this for initialization
 	void Start () {
@@ -17,18 +19,17 @@ public class PlayerTrackerController : MonoBehaviour {
     // LateUpdate called after all objects have been updated
     void LateUpdate()
     {
-        GameObject[] players = GameObject.FindGameObjectsWithTag(Tag);
-        if ( players.Length == 0 )
-            return; // nothing to track
-
         int n = 0;
         Vector3 center = Vector3.zero;
-        foreach (GameObject it in players)
+        foreach (GameObject it in TagManager.FindAny(Tag))
         {
             // TODO: check if player is alive
             center += it.transform.position;
             n++;
         }
+        // no more players...
+        if (n == 0)
+            return;
 
         // keep original z component
         center.z = transform.position.z;

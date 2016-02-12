@@ -1,10 +1,10 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using Vectrosity;
 
 [RequireComponent(typeof(TargetLink))]
-public class AIM120 : WeaponBehaviour<AllTags.Values> {
+public class AIM120 : MonoBehaviour {
     public float Velocity = 10;
     public float BlastRadius = 0.5f; // kms
     public float Damage = 10;

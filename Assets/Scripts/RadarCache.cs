@@ -108,9 +108,8 @@ class RadarCache : IEnumerable<RadarItem>
 
     IEnumerator<KeyValuePair<float, GameObject>> FindBlips()
     {
-        GameObject[] gos = GameObject.FindGameObjectsWithTag(Mode.Tag);
         Vector3 position = Host.transform.position;
-        foreach (GameObject go in gos)
+        foreach (GameObject go in TagManager.FindAny(Mode.Tags))
         {
             Vector3 diff = go.transform.position - position;
             float curDistance = diff.sqrMagnitude;

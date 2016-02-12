@@ -14,10 +14,8 @@ public class GunstarController : MonoBehaviour {
     AudioSource _audio;
     Stationaries _stations;
     Radar _radar;
-    bool _missileMode = true;
     GameObject _sight;
     HitPoints _hp;
-    Rigidbody _rb;
 
 	// Use this for initialization
 	void Start () {
@@ -28,7 +26,12 @@ public class GunstarController : MonoBehaviour {
         TargetLink tl = _sight.GetComponent<TargetLink>();
         if (tl != null)
             tl.Target = transform;
-        _sight.SetActive(false);
+        
+        // bind radar and sight
+        var rc = _sight.GetComponent<IRadarController>();
+        rc.OnTargetLocked += (go) => {
+        	_radar.PushLock(go);
+        };
 
         _hp = GetComponent<HitPoints>();
 
@@ -38,40 +41,13 @@ public class GunstarController : MonoBehaviour {
             it.Aim = _sight.transform;
         }
 
-        // synchronize input with selected station
-        RefreshSelectedStation();
-        if ( _stations != null )
-        {
-            _stations.OnSelectionChanged += (s) =>
-            {
-                RefreshSelectedStation();
-            };
-        }
-
-        _rb = GetComponent<Rigidbody>();
+        StartCoroutine(TrackAim());
 	}
 	
-    void RefreshSelectedStation()
-    {
-        Stationary selectedStation = _stations.SelectedItem;
-        if ( selectedStation != null)
-        {
-            switch(selectedStation.Type)
-            {
-                case Stationary.StationaryType.Missile:
-                    _radar.enabled = true;
-                    _missileMode = true;
-                    _sight.SetActive(false);
-                    break;
-                case Stationary.StationaryType.Gun:
-                    _radar.enabled = false;
-                    _missileMode = false;
-                    _sight.SetActive(true);
-                    StartCoroutine(TrackAim());
-                    break;
-            }
-        }
-    }
+	void OnDisable()
+	{
+		Destroy(_sight);
+	}
 
 	// Update is called once per frame
     Quaternion _sightRotation = Quaternion.identity;
@@ -79,16 +55,7 @@ public class GunstarController : MonoBehaviour {
 	void Update () {
         if (Input.GetButtonUp("WeaponChange"))
             _stations.Next();
-
-        if (_missileMode)
-        {
-            float lh = Input.GetAxis("LeftStickHorizontal");
-
-            Transform t = RotationTarget == null ? this.transform : RotationTarget.transform;
-            t.rotation *= Quaternion.Euler(0.0f, 0.0f, -lh * RotationSpeed * Time.deltaTime);
-        }
-        else // twin stick style
-        {
+            
             float lh = Input.GetAxis("LeftStickHorizontal");
             float lv = Input.GetAxis("LeftStickVertical");
             
@@ -103,7 +70,6 @@ public class GunstarController : MonoBehaviour {
             }
             transform.rotation = Quaternion.Slerp(transform.rotation, _sightRotation, _sightRotationRatio / GunSightTrackingDelay);
             _sightRotationRatio += Time.deltaTime;
-        }
 
         if (Input.GetAxis("Fire") == 1)
             _stations.Release();
@@ -111,8 +77,8 @@ public class GunstarController : MonoBehaviour {
 
     IEnumerator TrackAim()
     {
-        while(!_missileMode)
-        {            
+    	while(true)
+    	{        
             Vector3 targetDelta = _sight.transform.position - transform.position;
             targetDelta.z = 0;
 
@@ -123,11 +89,4 @@ public class GunstarController : MonoBehaviour {
             yield return new WaitForSeconds(GunSightTrackingDelay);
         }
     }
-
-    /*
-    void FixedUpdate() 
-    {
-        _rb.velocity = Vector3.ClampMagnitude(_rb.velocity, Velocity);
-    } 
-     * */
 }

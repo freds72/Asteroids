@@ -3,61 +3,76 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class TagManager
+public static class TagManager
 {
-	public static readonly TagManager Self = new TagManager();
-	
-	Dictionary<long, Dictionary<int, GameObject>> _goByTag = new Dictionary<long, Dictionary<int, GameObject>>();
-	
-	void Register(long tag, int id, GameObject go)
-	{
-		Dictionary<int, GameObject> gos = null;
-		if (!_goByTag.TryGetValue(tag,out gos))
-		{
-			gos = new Dictionary<int, GameObject>();
-			_goByTag[tag] = gos;
-		}
-		//
-		gos[id] = go;
-	}
-	
-	public void Register(ITagCollection mt)
-	{
-        int id = mt.GameObject.GetInstanceID();
-        for (int i = 0; i < 64; ++i)
-        {
-            long tag = mt.Mask & (1L << i);
-            if ( tag != 0L )
-                Register(tag, id, mt.GameObject);
-        }
-	}
-	
-	void Unregister(long tag, int id)
-	{
-		Dictionary<int, GameObject> gos = null;
-		if (_goByTag.TryGetValue(tag,out gos))
-		{
-			gos.Remove(id);
-		}
-	}
+    static Dictionary<long, Dictionary<int, GameObject>> _goByTag = new Dictionary<long, Dictionary<int, GameObject>>();
 
-    public void Unregister(ITagCollection mt)
+    static void Register(long tag, GameObject go)
     {
-        int id = mt.GameObject.GetInstanceID();
+        Dictionary<int, GameObject> gos = null;
+        if (!_goByTag.TryGetValue(tag, out gos))
+        {
+            gos = new Dictionary<int, GameObject>();
+            _goByTag[tag] = gos;
+        }
+        //
+        gos[go.GetInstanceID()] = go;
+    }
+
+    public static void Register(ITagCollection tags, GameObject go)
+    {
         for (int i = 0; i < 64; ++i)
         {
-            long tag = mt.Mask & (1L << i);
+            long tag = tags.Mask & (1L << i);
             if (tag != 0L)
-                Unregister(tag, id);
+                Register(tag, go);
         }
     }
-	
-	public IEnumerable<GameObject> Find<T>(T tag) where T: struct
-	{
-        Dictionary<int, GameObject> gos = null;
-        if (!_goByTag.TryGetValue(Convert.ToInt64(tag), out gos))
-            return Enumerable.Empty<GameObject>();
 
-        return gos.Values;
-	}
+    static void Unregister(long tag, int id)
+    {
+        Dictionary<int, GameObject> gos = null;
+        if (_goByTag.TryGetValue(tag, out gos))
+        {
+            gos.Remove(id);
+        }
+    }
+
+    public static void Unregister(ITagCollection tags, GameObject go)
+    {
+        for (int i = 0; i < 64; ++i)
+        {
+            long tag = tags.Mask & (1L << i);
+            if (tag != 0L)
+                Unregister(tag, go.GetInstanceID());
+        }
+    }
+
+    public static IEnumerable<GameObject> Find<T>(T tag) where T : struct
+    {
+        Dictionary<int, GameObject> gos = null;
+        if (_goByTag.TryGetValue(Convert.ToInt64(tag), out gos))
+        {
+            return gos.Values;
+        }
+        return Enumerable.Empty<GameObject>();
+    }
+
+    public static IEnumerable<GameObject> FindAny<T>(T tag)
+    {
+        List<IEnumerable<GameObject>> all = new List<IEnumerable<GameObject>>(4);
+        long mask = Convert.ToInt64(tag);
+        for (int i = 0; i < 64; i++)
+        {
+            if ((mask & (1L << i)) == 0)
+                continue;
+            Dictionary<int, GameObject> gos = null;
+            if (_goByTag.TryGetValue(Convert.ToInt64(tag), out gos))
+            {
+                all.Add(gos.Values);                     
+            }
+        }
+        // virtual merge of all collections
+        return all.SelectMany(x => x);
+    }
 }

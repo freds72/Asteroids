@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
 /// <summary>
@@ -7,8 +7,9 @@ using System.Collections;
 public class WeaponBehaviour<T> : 
     MonoBehaviour,
     IWeapon 
-    where T: struct
+    where T : struct
 {
+	// for Unity editor
     public int hitPoints = 1;
     public Enums.DamageType type = Enums.DamageType.Physical;
     public TagCollection<T> ignoreTags = new TagCollection<T>();

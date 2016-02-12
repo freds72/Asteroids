@@ -1,10 +1,11 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using Vectrosity;
 
 [RequireComponent(typeof(TargetLink))]
-public class SAMMissile : WeaponBehaviour<AllTags.Values> {
+public class SAMMissile : MonoBehaviour 
+{
     public float Velocity = 0.7f;
     public float BlastRadius = 0.5f; // kms
     public float Damage = 10;

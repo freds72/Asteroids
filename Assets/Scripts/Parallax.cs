@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
 public class Parallax : MonoBehaviour {
@@ -11,7 +11,7 @@ public class Parallax : MonoBehaviour {
 	
 	}
 	
-	// Update is called once per frame
+	// Refresh position after all other updates
 	void LateUpdate () {
         Vector3 diff = Scale * (Target.transform.position - transform.position);
 

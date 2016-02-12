@@ -1,14 +1,20 @@
-﻿using UnityEngine;
+
 using System.Collections;
 
 public interface ITagCollection 
 {
     long Mask { get; }
-    GameObject GameObject { get; }
     /// <summary>
     /// Returns whether the other tag collection matches any of tags from self.
     /// </summary>
     /// <param name="other"></param>
     /// <returns></returns>
     bool Intersects(ITagCollection other);
+
+    /// <summary>
+    /// Exact match
+    /// </summary>
+    /// <param name="other"></param>
+    /// <returns></returns>
+    bool Equals(ITagCollection other);
 }
