@@ -35,7 +35,6 @@ public class AmmoPanel : MonoBehaviour
 
         _maxAmmo = _station.Ammo;
         int slices = IconPrefab.Slices;
-        Debug.Log(string.Format("{0} slices: {1}", _station.Name, slices));
         int n = Mathf.CeilToInt(_maxAmmo / slices);
         for (int i = 0; i < n; i++)
         {
@@ -62,8 +61,6 @@ public class AmmoPanel : MonoBehaviour
         // 8 - 2*4 = 0
         int remainder = ammo - nfull * slices;
 
-        Debug.Log(_station.Name);
-        Debug.Log(string.Format("[{4}/{5}] full: 0-{0} / partial: {1}-{2} -> {3}", nfull - 1, nfull, n, remainder, ammo, _maxAmmo));
         int i = 0;
         for (; i < nfull; i++)
             _icons[i].Ammo = slices;

@@ -38,4 +38,19 @@ public abstract class TagCollectionBehaviour<T> :
     {
         return _tags.Equals(other);
     }
+
+    public bool Intersects<C>(IEnumerable<C> other) where C : struct
+    {
+        return _tags.Intersects(other);
+    }
+
+    public bool Equals<C>(IEnumerable<C> other) where C : struct
+    {
+        return _tags.Equals(other);
+    }
+
+    public override string ToString()
+    {
+        return _tags.ToString();
+    }
 }

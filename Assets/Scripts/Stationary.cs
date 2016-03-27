@@ -6,9 +6,6 @@ using System.Linq;
 
 [Serializable()]
 public class Stationary {
-    public delegate void ReleaseEvent(Stationary s, Transform transform);
-    public event ReleaseEvent OnRelease;
-
     public enum StationaryType
     {
         Missile,
@@ -16,12 +13,21 @@ public class Stationary {
         Gun
     };
     public string Name;
+    public Sprite Icon;
+    [Tooltip("Ammo count")]
     public int Ammo;
     public GameObject Prefab;
+    [Tooltip("Delay between release")]
     public float Delay = 0.1f;
+    [Tooltip("Max number of items to spawn")]
+    [Range(1, 100)]
+    public int Burst = 1;
+    [Tooltip("Spread cone (degrees)")]
+    public float Spread = 0;
     public StationaryType Type;
-    // time in second to automatically refill ammo
+    [Tooltip("Time in second to automatically refill ammo")]
     public float AutoAmmoDelay = 0;
+    [Tooltip("Firing anchors")]
     public List<Transform> Anchors;
     public enum ReleaseType
     {
@@ -30,7 +36,9 @@ public class Stationary {
     	Aim
     };
     public ReleaseType ReleaseMode;
+    [Tooltip("Firing direction")]
     public Transform Aim;
+    [Tooltip("Release sounds")]
     public List<AudioClip> Clips;
     
     float _nextFireTime = 0;    
@@ -71,11 +79,32 @@ public class Stationary {
         _nextFireTime = Time.time + Delay;
         Ammo--;
         Transform transform = NextSpawnLocation();
-        if (OnRelease != null)
-            OnRelease(this, transform);
+        if ( Spread != 0 )
+            transform.rotation *= Quaternion.Euler(0,UnityEngine.Random.Range(-Spread/2.0f, Spread/2.0f),0);
 
         return (GameObject)MonoBehaviour.Instantiate(Prefab,
             transform.position,
             transform.rotation);
+    }
+
+    public virtual IEnumerator<GameObject> BulkSpawn()
+    {
+#if DEBUG
+        if (!CanSpawn())
+            throw new InvalidProgramException("Trying to fire an item without checking CanFire");
+#endif
+
+        _nextFireTime = Time.time + Delay;
+        Ammo--;
+        for (int i = 0; i < Burst; i++)
+        {
+            Transform transform = NextSpawnLocation();
+            if (Spread != 0)
+                transform.rotation *= Quaternion.Euler(0, UnityEngine.Random.Range(-Spread / 2.0f, Spread / 2.0f), 0);
+
+            yield return (GameObject)MonoBehaviour.Instantiate(Prefab,
+                transform.position,
+                transform.rotation);
+        }
     }
 }

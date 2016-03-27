@@ -21,7 +21,7 @@ public class PlayerTrackerController : MonoBehaviour {
     {
         int n = 0;
         Vector3 center = Vector3.zero;
-        foreach (GameObject it in TagManager.FindAny(Tag))
+        foreach (GameObject it in TagManager.FindAny((long)Tag))
         {
             // TODO: check if player is alive
             center += it.transform.position;

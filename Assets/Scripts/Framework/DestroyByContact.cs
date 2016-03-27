@@ -5,7 +5,7 @@ public class DestroyByContact : MonoBehaviour
 {
     public string IgnoreTag = null;
     public GameObject DestroyedPrefab;
-    
+
     void DoCollision(GameObject collider)
     {
         if (collider.tag.Equals(IgnoreTag))
@@ -13,7 +13,9 @@ public class DestroyByContact : MonoBehaviour
 
         DestroyObject(this.gameObject);
         if (DestroyedPrefab != null)
-            Instantiate(DestroyedPrefab, transform.position, transform.rotation);
+        {
+            Instantiate(DestroyedPrefab, transform.position, transform.localRotation * Quaternion.Euler(0,180+90,0));
+        }
     }
 
     void OnCollisionEnter2D(Collision2D col)
@@ -28,7 +30,6 @@ public class DestroyByContact : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        Debug.Log(string.Format("Trigger: {0}", other.gameObject));
         DoCollision(other.gameObject);
     }
 

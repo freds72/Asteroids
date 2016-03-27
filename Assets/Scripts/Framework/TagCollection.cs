@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System;
+using System.Text;
 
 [Serializable]
 public class TagCollection<T> :
@@ -52,9 +53,37 @@ public class TagCollection<T> :
         return (Mask == other.Mask);
     }
 
-    public static explicit operator Int64(TagCollection<T> x)
+    public bool Intersects<C>(IEnumerable<C> other) where C : struct
     {
-        if (x == null) throw new InvalidCastException();
-        return x.Mask;
+        if (other == null)
+            return false;
+        foreach (C it in other)
+        {
+            Debug.Log(string.Format("{0} & {1} = {2}", Mask, Convert.ToInt64(it), (Mask & Convert.ToInt64(it))));
+            if ((Mask & Convert.ToInt64(it)) != 0)
+                return true;
+        }
+        return false;
+    }
+
+    public bool Equals<C>(IEnumerable<C> other) where C : struct
+    {
+        if (other == null)
+            return false;
+        long otherMask = 0L;
+        foreach (C it in other)
+            otherMask |= Convert.ToInt64(it);
+        return (Mask == otherMask);
+    }
+
+    public override string ToString()
+    {
+        StringBuilder s = new StringBuilder();
+        foreach (T it in Tags)
+        {
+            s.Append(it.ToString());
+            s.Append("\n");
+        }
+        return s.ToString();
     }
 }

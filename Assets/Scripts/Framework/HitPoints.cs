@@ -5,8 +5,18 @@ using System.Linq;
 
 public class HitPoints : MonoBehaviour
 {
-	public int HP = 100;
+    public delegate void Killed(GameObject go);
+    public delegate void HPChanged(GameObject go, int hp);
+    /// <summary>
+    /// Raise when GameObject gets killed
+    /// </summary>
+    public event Killed OnKilled;
+    public event HPChanged OnHPChanged;
+    
+    public int HP = 100;
 	public int MaxHP = 100;
+	// Score when killed
+	public int Score = 100;
 	// hp per seconds
 	public float RegenerationRate = 0;
 	// prefab to spawn when dying
@@ -25,6 +35,9 @@ public class HitPoints : MonoBehaviour
 		HP = Mathf.Max(HP - hitpoints,0);
 		if (_anim)
 			_anim.SetTrigger(_hitTrigger);
+
+        if (OnHPChanged != null)
+            OnHPChanged(gameObject, HP);
 	}
 	
 	public bool IsDead
@@ -36,8 +49,7 @@ public class HitPoints : MonoBehaviour
         _tags = GetComponent<ITagCollection>();
         _anim = GetComponent<Animator>();
         if (SafeDelay > 0)
-        	StartCoroutine(SafeState());
-        
+        	StartCoroutine(SafeState());        
 	}
 	
 	IEnumerator SafeState()
@@ -55,11 +67,16 @@ public class HitPoints : MonoBehaviour
 		_bonus += Time.deltaTime * RegenerationRate;
 		int health = Mathf.RoundToInt(_bonus);
 		_bonus -= health;
+        int prevHP = HP;
 		HP = Mathf.Min(HP + health, MaxHP);
+        if (prevHP != HP && OnHPChanged != null)
+            OnHPChanged(gameObject, HP);
 
         // are we down?
         if (IsDead)
         {
+            if (OnKilled != null)
+                OnKilled(gameObject);
             Destroy(gameObject);
             if (DiePrefab != null)
                 Instantiate(DiePrefab, transform.position, transform.rotation);
@@ -71,11 +88,24 @@ public class HitPoints : MonoBehaviour
         IWeapon wp = collider.GetComponent<IWeapon>();
         if (wp == null)
             return;
-        
+
         if (wp.IgnoreTags.Intersects(_tags))
+        {
+            // Debug.Log(string.Format("{0} <- {1} ignored", gameObject.tag, collider.tag));
             return;
+        }
 
         Hit(wp.HitPoints);
+        if (IsDead && Score > 0)
+        {
+        	IPlayerIndex idx = collider.GetComponent<IPlayerIndex>();
+            if (idx != null)
+            {
+                ScoreManager.Score(
+                    idx.PlayerIndex,
+                    Score);
+            }
+        }
     }
 
     void OnCollisionEnter(Collision col)

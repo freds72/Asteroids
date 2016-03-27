@@ -9,6 +9,7 @@ public class ConstantTranslation : MonoBehaviour {
     /// Velocity
     /// </summary>
     public float Velocity = 10;
+    public bool Is3D = false;
 
 	// Use this for initialization
 	void Start () {
@@ -16,6 +17,6 @@ public class ConstantTranslation : MonoBehaviour {
 	
 	// Update is called once per frame
 	void FixedUpdate () {
-        transform.position += Time.deltaTime * Velocity * transform.up;
+        transform.position += Time.deltaTime * Velocity * (Is3D?transform.right:transform.up);
 	}
 }

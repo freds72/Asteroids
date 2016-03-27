@@ -1,8 +1,11 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System;
 
-public class Stationaries : MonoBehaviour 
+public class Stationaries : 
+	MonoBehaviour
 {
     public delegate void SelectedEvent(Stationary o);
     public event SelectedEvent OnSelectionChanged;
@@ -12,15 +15,12 @@ public class Stationaries : MonoBehaviour
     public event RefillEvent OnRefill;
 
     public List<Stationary> Items = new List<Stationary>(4);
-    public Radar Radar;
     AudioSource _audio;
     
     int _selected = 0;
 
 	// Use this for initialization
 	void Start () {
-        if (Radar == null)
-            Radar = GetComponent<Radar>();
 		foreach(Stationary it in Items)
 		{
             if (it.AutoAmmoDelay > 0)
@@ -36,6 +36,26 @@ public class Stationaries : MonoBehaviour
             if (_selected < Items.Count)
                 return Items[_selected];
             return null;
+        }
+    }
+
+    public int StringToHash(string name)
+    {
+        for(int i = 0;i<Items.Count;i++)
+        {
+            if ( Items[i].Name == name )
+                return i;
+        }
+        throw new ArgumentException("Unknown station: " + name);
+    }
+
+    public void Select(int index)
+    {
+        if ( index != _selected )
+        {
+            _selected = index;
+            if (OnSelectionChanged != null)
+                OnSelectionChanged(SelectedItem);
         }
     }
 
@@ -65,23 +85,31 @@ public class Stationaries : MonoBehaviour
         Stationary item = SelectedItem;
         if ( item != null &&  item.CanSpawn())
         {
-            GameObject go = item.Spawn();
-            if (OnRelease != null)
-                OnRelease(item, go);
-            Transform tgt = Radar.PopLock();
-            if ( tgt != null )
-            {
-                // get the target interface
-                TargetLink link = go.GetComponent<TargetLink>();
-                link.Target = tgt;
-            }
             // sounds
             if (_audio != null &&
             	item.Clips != null &&
             	item.Clips.Count != 0)
             {
-            	AudioClip clip = item.Clips[Random.Range(0, item.Clips.Count)];
+            	AudioClip clip = item.Clips[UnityEngine.Random.Range(0, item.Clips.Count)];
             	_audio.PlayOneShot(clip);
+            }
+            if (item.Burst == 1)
+            {
+                GameObject go = item.Spawn();
+
+                // done, notify clients
+                if (OnRelease != null)
+                    OnRelease(item, go);
+            }
+            else
+            {
+                IEnumerator<GameObject> it = item.BulkSpawn();
+                while(it.MoveNext())
+                {
+                    GameObject go = it.Current;
+                    if (OnRelease != null)
+                        OnRelease(item, go);
+                }
             }
         }
 	}

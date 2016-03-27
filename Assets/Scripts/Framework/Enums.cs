@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
 /// <summary>
@@ -14,5 +14,14 @@ public static class Enums
         Physical,
         Energy,
         Magical
-    };	
+    };
+
+    public enum PlayerIndex
+    {
+        Unknown = -1,
+        One = 0,
+        Two = 1,
+        Three = 2,
+        Four = 3
+    };
 }
