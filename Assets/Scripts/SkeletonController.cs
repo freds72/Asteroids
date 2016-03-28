@@ -8,6 +8,7 @@ public class SkeletonController : MonoBehaviour {
 
     public GameObject BlastPrefab;
     public GameObject Avatar;
+    public ParticleSystem SmokeParticles;
     public float BlastDistance = 2;
 
     SeekController _seek;
@@ -28,6 +29,16 @@ public class SkeletonController : MonoBehaviour {
                 Destroy(gameObject);
             }
         };
+        HitPoints hp = GetComponent<HitPoints>();
+        if ( hp != null )
+        {
+            hp.OnKilled += (go) =>
+            {
+                SmokeParticles.Stop();
+                SmokeParticles.transform.parent = null;
+                Destroy(SmokeParticles.gameObject, 3);
+            };
+        }
 	}
 
     float previousXSign = 0;

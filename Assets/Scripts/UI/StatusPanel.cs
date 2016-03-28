@@ -12,6 +12,8 @@ public class StatusPanel : MonoBehaviour {
     public Image WeaponImage;
     public Text AmmoText;
     public GameObject Player;
+    public ConstantCameraTranslation CameraScroller;
+    public Text DistanceText;
 
     Stationaries _stations;
     HitPoints _health;
@@ -48,7 +50,7 @@ public class StatusPanel : MonoBehaviour {
     {
         _selectedWeapon = s.Name;
         AmmoText.text = s.Ammo.ToString();
-        // TODO: image!
+        WeaponImage.sprite = s.Icon;
     }
 
 	// Update is called once per frame
@@ -58,5 +60,7 @@ public class StatusPanel : MonoBehaviour {
 
         if (Input.GetButtonUp("Status"))
             _animator.SetBool(_openParam, false);
+
+        DistanceText.text = string.Format("{0:0} Meters", CameraScroller.Distance);
 	}
 }

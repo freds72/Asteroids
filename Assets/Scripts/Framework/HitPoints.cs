@@ -21,6 +21,7 @@ public class HitPoints : MonoBehaviour
 	public float RegenerationRate = 0;
 	// prefab to spawn when dying
 	public GameObject DiePrefab;
+    public Transform DieOffset = null;
 	// safe delay upon spawn
 	public float SafeDelay = 0;
 	bool _isSafe = false;
@@ -79,7 +80,7 @@ public class HitPoints : MonoBehaviour
                 OnKilled(gameObject);
             Destroy(gameObject);
             if (DiePrefab != null)
-                Instantiate(DiePrefab, transform.position, transform.rotation);
+                Instantiate(DiePrefab, transform.position + (DieOffset==null?Vector3.zero:DieOffset.position), transform.rotation);
         }
 	}
 
@@ -90,10 +91,7 @@ public class HitPoints : MonoBehaviour
             return;
 
         if (wp.IgnoreTags.Intersects(_tags))
-        {
-            // Debug.Log(string.Format("{0} <- {1} ignored", gameObject.tag, collider.tag));
             return;
-        }
 
         Hit(wp.HitPoints);
         if (IsDead && Score > 0)

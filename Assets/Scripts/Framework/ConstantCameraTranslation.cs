@@ -19,6 +19,9 @@ public class ConstantCameraTranslation : MonoBehaviour
     float _height;
     float _width;
     float _velocity;
+
+    public float Distance { get; set; }
+
     // Use this for initialization
     void Start()
     {
@@ -26,6 +29,8 @@ public class ConstantCameraTranslation : MonoBehaviour
         _velocity = 0;
         _height = 2f * Camera.main.orthographicSize;
         _width = _height * Camera.main.aspect;
+        Distance = 0;
+        StartCoroutine(Log());
     }
 
     public void Scroll()
@@ -38,10 +43,20 @@ public class ConstantCameraTranslation : MonoBehaviour
         _velocity = 0;
     }
 
+    IEnumerator Log()
+    {
+        Debug.Log("Distance: " + Distance);
+        yield return new WaitForSeconds(0.5f);
+    }
+
     // Update is called once per frame
     void Update()
     {
-        position += Time.deltaTime * _velocity * transform.right;
+        Vector3 delta = Time.deltaTime * _velocity * transform.right;
+        position += delta;
+        // keep track of the distance
+        Distance += delta.x;
+
         if (Snap)
             transform.position = new Vector3(Mathf.FloorToInt(position.x) * PixelSize, position.y, position.z);
         else

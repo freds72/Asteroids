@@ -75,7 +75,8 @@ public class TwinStickController : MonoBehaviour {
         if (Input.GetButtonUp("WeaponChange"))
             _stations.Next();
 
-        if (Input.GetAxis("Fire") == 1)
+        if (Input.GetAxis("Fire") == 1 ||
+            Input.GetAxis("Fire") == -1)
             _stations.Release();
     }
 
