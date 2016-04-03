@@ -22,7 +22,8 @@ public class BadAssController : MonoBehaviour {
             weaponSprite.sprite = s.Icon;
         };
 	}
-    
+
+    float _shootAngle = 0;
 	// Update is called once per frame
 	void Update () {
         bool shoot = false;
@@ -30,28 +31,20 @@ public class BadAssController : MonoBehaviour {
         {
             _stations.Select(_shotgunHash);
             shoot = true;
+            _shootAngle = ShortRangeSight.PlayerAngle;
         }
         else if ( LongRangeSight.IsPlayerInSight )
         {
             _stations.Select(_miniGunHash);
             shoot = true;
+            _shootAngle = LongRangeSight.PlayerAngle;
         }
+
+        // weapon direction
+        WeaponTransform.localRotation = Quaternion.Euler(0, 0, -_shootAngle);
+        RotationTarget.transform.rotation = Quaternion.Euler(0.0f, _shootAngle, 0.0f);
 
         if (shoot)
-        {
-            float rot = 5 * Time.time;
-
-            // set the z axis rotation of this transform in degrees using Euler
-            RotationTarget.transform.rotation = Quaternion.Euler(0.0f, rot, 0.0f);
-
-            WeaponTransform.localRotation = Quaternion.Euler(0, 0, -rot);
-
-            //
             _stations.Release();
-        }
-        else
-        {
-            WeaponTransform.localRotation = Quaternion.identity;
-        }
 	}
 }

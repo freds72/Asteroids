@@ -80,7 +80,7 @@ public class HitPoints : MonoBehaviour
                 OnKilled(gameObject);
             Destroy(gameObject);
             if (DiePrefab != null)
-                Instantiate(DiePrefab, transform.position + (DieOffset==null?Vector3.zero:DieOffset.position), transform.rotation);
+                Instantiate(DiePrefab, DieOffset==null?transform.position:DieOffset.position, transform.rotation);
         }
 	}
 

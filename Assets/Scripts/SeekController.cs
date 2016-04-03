@@ -8,7 +8,6 @@ public class SeekController : MonoBehaviour {
     public event NearPlayer OnNearPlayer;
 
     public float Velocity = 2;
-    public float MaxVelocity = 3;
     public float ThinkDelay = 0.3f;
     public float MinRadius = 1;
     Rigidbody _rb;
@@ -91,7 +90,7 @@ public class SeekController : MonoBehaviour {
     {
         _rb.AddForce(Velocity * _dir, ForceMode.Impulse);
         Vector3 v = _rb.velocity;
-        if (v.sqrMagnitude > MaxVelocity * MaxVelocity)
-            _rb.velocity = Vector3.ClampMagnitude(v, MaxVelocity);
+        if (v.sqrMagnitude > Velocity * Velocity)
+            _rb.velocity = Vector3.ClampMagnitude(v, Velocity);
     }
 }
